@@ -6,11 +6,14 @@ open OUT, "> mp3/iTunes Music Library";
 
 print OUT do { local $/; <IN> };
 
-use Test::Manifest qw(get_t_files);
-
+my $tests = do {
+	local @ARGV = qw(t/test_manifest);
+	my $data = join " ", map {chomp; "t/$_" } <>;
+	};
+	
 WriteMakefile(
     'NAME'		    => 'Mac::iTunes',
-	'VERSION'       => '0.6_01',
+	'VERSION'       => '0.6_02',
 	
     'PM'            => {
      	'lib/AppleScript.pm'  => '$(INST_LIBDIR)/iTunes/AppleScript.pm',
@@ -24,15 +27,14 @@ WriteMakefile(
     	},
 
 	'PREREQ_PM' => {
-		File::Find::Rule  => undef,
-		Mac::AppleScript  => undef,
-		Mac::PropertyList => undef,
-		Test::Manifest    => undef,
-		Test::More        => undef,
-		Test::Pod         => undef,
+		File::Find::Rule  => 0,
+		Mac::AppleScript  => 0,
+		Mac::PropertyList => 0,
+		Test::More        => 0,
+		Test::Pod         => 0,
 		},
 		    	
-    test   => { TESTS      => scalar get_t_files() },
+    test   => { TESTS      => $tests },
     depend => { 'Makefile' => 't/test_manifest' },
     clean  => { FILES      => q|"mp3/iTunes Music Library"| },
     	
