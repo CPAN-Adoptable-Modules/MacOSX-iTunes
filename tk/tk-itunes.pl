@@ -66,15 +66,13 @@ use vars qw( $Verbose );
 use ConfigReader::Simple;
 use Data::Dumper;
 use Mac::iTunes;
-use Mac::iTunes::AppleScript;
+use Mac::iTunes::AppleScript qw(:state);
 use Tk;
 
 ########################################################################
 my $Current    = '--> player stopped <--';
-my $Scale      = 0;
-my $Marking    = 0;
 my $Time       = 0;
-my $Scale_time = 0;
+my @Tracks     = ();
 
 my $Config     = ConfigReader::Simple->new( "tkitunes.rc" );
 
@@ -110,9 +108,10 @@ sub _make_window
 	my $scale       = _scale( $right_frame, \$scale_value );
 
 	my $tracks      = _track_list_box( $right_frame );
+	
+	tie @Tracks, 'Tk::Listbox', $tracks;
+	
 	my $repeat		= _repeat( $mw, \$scale_value   );
-
-    _init();
     
 	return $mw;
 	}
@@ -128,16 +127,14 @@ sub _make_actions
 		'next'       => sub { $C->next                                 },
 		previous     => sub { $C->previous                             },
 		stop         => sub { $C->stop                                 },
-		reset_scale  => sub { $Scale_time = 0                          },
-		marking_on   => sub { $Marking = 1                             },
-		marking_off  => sub { $Marking = 0                             },
+
 		reset_time   => sub { $Time = $C->current_track_finish         },
 		get_tracks   => sub { $C->get_track_names_in_playlist( $_[0] ) },
 		track_name   => sub { $C->current_track_name                   },
 		quit         => sub { $C->stop; exit                           },
 		update_ui    => sub { 1 },
 		playlists    => sub { $C->get_playlists                        },
-		
+		position     => sub { $C->player_position                      },
 		get_state    => sub { $C->player_state                         },
 		
 		bleat        => sub { print STDERR "Debug level is $Verbose\n" },
@@ -147,9 +144,7 @@ sub _make_actions
 		
 	$Actions{play} = sub { 
 		$C->play; 
-		$Actions{reset_scale}->(); 
 		$Actions{reset_time}->(); 
-		$Actions{marking_on}->(); 
 		};
 	
 	$SIG{INT} = $Actions{quit};
@@ -176,9 +171,9 @@ sub _buttons
 	
 	my @Buttons = ( 
 		[ 'Play',    '00ff00',  [ qw(play)             ], ],
-		[ 'Pause',   'ffcc00',  [ qw(pause marking_off)                 ], ],
-		[ 'Stop',    'ff0000',  [ qw(stop reset_scale marking_off)      ], ],
-		[ 'Restart', '00ffff',  [ qw(back_track reset_scale marking_on) ], ],
+		[ 'Pause',   'ffcc00',  [ qw(pause)            ], ],
+		[ 'Stop',    'ff0000',  [ qw(stop)             ], ],
+		[ 'Restart', '00ffff',  [ qw(back_track)       ], ],
 		[ 'Next >>', '00ffff',  [ qw(next play       ) ], ],
 		[ '<< Prev', '00ffff',  [ qw(previous play   ) ], ],
 		[ 'Debug++', 'cccccc',  [ qw(debug_more bleat) ], ],
@@ -201,11 +196,7 @@ sub _button
 		foreach my $action ( @$actions ) 
 			{
 			print STDERR "Calling $action action\n" if $Verbose > 1;
-			print STDERR "Scale time before $action is $Scale_time; T=$Time\n"
-				if $Verbose > 2;
 			eval { $Actions->{$action}->() } if exists $Actions->{$action};
-			print STDERR "Scale time after $action is $Scale_time; T=$Time\n"
-				if $Verbose > 2;
 			}  
 		};
 		
@@ -234,12 +225,14 @@ sub _menubar
 	my( $edit_items, $help_items, $play_items ) = ( [], [], [] );
 	foreach my $playlist ( @{ $Actions->{'playlists'}->() } )
 		{
-		push @$play_items, [ 'command', $playlist ];
+		push @$play_items, [ 'command', $playlist, 
+			'-command' => sub { @Tracks = @{ $Actions->{get_tracks}->( $playlist ) } } ];
 		}
 
 	my $file = _menu( $menubar, "~File",     $file_items );
 	my $edit = _menu( $menubar, "~Edit",     $edit_items );
 	my $play = _menu( $menubar, "~Playlist", $play_items );		
+	my $help = _menu( $menubar, "~Refresh",  $refresh_items );
 	my $help = _menu( $menubar, "~Help",     $help_items );
 	
 	return $menubar;
@@ -336,9 +329,11 @@ sub _repeat
 	my $mw    = shift;
 	my $scale = shift;
 	
-	$mw->repeat( 1_000, 
+	$mw->repeat( 3_000, 
 		sub { 
-			if( $Marking )
+			my $state = $Actions->{get_state}->();
+			
+			if( $state eq PLAYING )
 				{
 				my $name = $Actions->{track_name}->();
 				if( length $name > 32 )
@@ -347,26 +342,21 @@ sub _repeat
 					}
 				$Current = $name;
 				
-				$$scale = eval { ( ++$Scale_time ) * 100 / $Time };
-				if( $Scale_time >= $Time )
+				my $pos = $Actions->{position}->();
+				
+				$$scale = eval { $pos * 100 / $Time };
+				}
+			elsif( $state eq STOPPED )
+				{
+				# this is a hack because iTunes does not
+				# correctly report pause
+				if( $Actions->{position}->() == 0 )
 					{
-					$Actions->{stop}->();
+					$$scale = 0;
+					$Current = '---> stopped <---';
 					}
 				}
 			} );
-	}
-	
-sub _init
-	{
-	my $state = $Actions->{get_state}->();
-	
-	if( $state eq Mac::iTunes::AppleScript::PLAYING )
-		{
-		foreach my $action ( qw(marking_on play reset_time reset_scale) )
-			{
-			$Actions->{$action}->();
-			}
-		}	
 	}
 	
 BEGIN { @ARGV = qw( -geometry 305x225+30+30 ) }
