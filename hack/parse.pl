@@ -34,10 +34,8 @@ sub hd
 	
 	eat( $ref, 4 );
 	
-	my( $length ) = unpack( "I", next_u32( $ref ) );
-	
-	eat( $ref, 4 );
-	
+	my( $length ) = unpack( "I", ${eat( $ref, 4 )} );
+		
 	print "\tlength is $length\n";
 	
 	eat( $ref, $length - 4 - 4 );
@@ -67,21 +65,32 @@ sub htim
 	
 	eat( $ref, 4 );
 	
-	my( $length ) = unpack( "I", ${eat( $ref, 4 )} );
-		
-	eat( $ref, 4 );
+	my( $header_length ) = unpack( "I", ${eat( $ref, 4 )} );
+	my( $record_length ) = unpack( "I", ${eat( $ref, 4 )} );
+			
+	my( $hohms )  = unpack( "I", ${eat( $ref, 4 )} );
 	
-	my( $hohms ) = unpack( "I", ${eat( $ref, 4 )} );
-	
-	my( $id ) = unpack( "I", ${eat( $ref, 4 )} );
+	my( $id )     = unpack( "I", ${eat( $ref, 4 )} );
+	my( $type )   = unpack( "I", ${eat( $ref, 4 )} );
+	eat( $ref, 4 * 3);
 
-	print "\tlength is $length\n";
-	print "\thohms is $hohms\n";
+	my( $bytes )  = unpack( "I", ${eat( $ref, 4 )} );
+	eat( $ref, 4 );
+
+	my( $track )  = unpack( "I", ${eat( $ref, 4 )} );
+	my( $tracks ) = unpack( "I", ${eat( $ref, 4 )} );
+	
+	print  "\theader length is $header_length\n";
+	print  "\trecord length is $record_length\n";
+	print  "\thohms is $hohms\n";
 	printf "\tid is %x\n", $id;
+	print  "\tbytes is $bytes\n";
+	print  "\ttrack is $track of $tracks\n";
 	
 	$Last_id = sprintf "%x", $id;
 	
-	eat( $ref, $length - $Ate);
+	eat( $ref, $
+	length - $Ate);
 	}
 
 BEGIN {
