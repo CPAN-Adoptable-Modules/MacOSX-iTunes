@@ -59,9 +59,7 @@ sub controller
 	
 	require Mac::iTunes::AppleScript;
 	
-	bless $self, 'Mac::iTunes::AppleScript';
-	
-	return $self;
+	return Mac::iTunes::AppleScript->new();
 	}
 	
 =item playlists

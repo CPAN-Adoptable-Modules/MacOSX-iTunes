@@ -6,7 +6,7 @@ use vars qw($AUTOLOAD);
 use Carp qw(carp);
 use Mac::AppleScript qw(RunAppleScript);
 
-my $Version;
+my $Singleton = undef;
 
 =head1 NAME
 
@@ -54,7 +54,23 @@ sub AUTOLOAD
 		}	
 		
 	}
+
+=item new()
+
+
+=cut
+
+sub new
+	{
+	my $class = shift;
 	
+	unless( defined $Singleton )
+		{
+		$Singleton = bless {}, $class;
+		}
+		
+	return $Singleton;
+	}	
 =item tell( COMMAND )
 
 The tell() method runs a simple 
