@@ -37,6 +37,7 @@ endian.t
 parse.t
 parse3.t
 parse4.t
+parse_audible.t
 preferences.t
 HERE
 	

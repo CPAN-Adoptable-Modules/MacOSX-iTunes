@@ -51,6 +51,7 @@ mp3/empty2.mp3
 mp3/empty3.mp3
 mp3/iTunes_3_Music_Library
 mp3/iTunes_Music_Library
+mp3/Audible_file
 plists/com.apple.iTunes.plist
 t/check_mp3.t
 t/controller.t
@@ -63,6 +64,8 @@ t/load.t
 t/endian.t
 t/parse.t
 t/parse3.t
+t/parse4.t
+t/parse_audible.t
 t/playlist.t
 t/pod.t
 t/position.t
