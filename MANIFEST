@@ -19,10 +19,13 @@ mp3/empty1.mp3
 mp3/empty2.mp3
 mp3/empty3.mp3
 mp3/iTunes_Music_Library
+t/test_manifest
 t/load.t
+t/pod.t
 t/parse.t
 t/parse3.t
 t/write.t
 t/item.t
 t/playlist.t
 t/itunes.t
+t/controller.t
