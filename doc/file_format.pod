@@ -185,11 +185,11 @@ hohm block.  Offsets start at 0', which is byte 28 in the record.
 
 =item hptm
 
+=back
+
 =cut
 
 "See why 1984 won't be like 1984";
-
-=back
 
 =head1 TO DO
 
