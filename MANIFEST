@@ -1,0 +1,12 @@
+# $Id$
+Changes
+Makefile.PL
+MANIFEST
+lib/iTunes.pm
+lib/Playlist.pm
+lib/Item.pm
+t/00.load.t
+t/01.item.t
+t/01.playlist.t
+t/02.itunes.t
+t/ok.pl
