@@ -282,6 +282,44 @@ sub copy
 	return $ref;
 	}
 
+=back
+
+=head2 Publisher
+
+=over 4
+
+=item publish( FORMAT [, FIELDS_REF [, ORDER_REF ] ] )
+
+Output the playlist in some format.
+
+Not implemented.
+
+=cut
+
+my @Publish_fields = [ qw() ];
+my $Default_fields = [ @Publish_fields ];
+my $Default_order  = [ @Publish_fields ];
+
+sub publish
+	{
+	my $self     = shift;
+	my $fields   = shift || $Default_fields;
+	my $order    = shift || $Default_order;
+	
+	unless( UNIVERSAL::isa( $fields, 'ARRAY' ) )
+		{
+		carp();
+		}
+	
+	unless( UNIVERSAL::isa( $order, 'ARRAY' ) )
+		{
+		carp();
+		}
+	
+	}
+	
+=back
+
 sub _not_implemented
 	{
 	require Carp;
@@ -292,8 +330,6 @@ sub _not_implemented
 	}
 		
 "See why 1984 won't be like 1984";
-
-=back
 
 =head1 SEE ALSO
 
