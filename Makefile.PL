@@ -13,21 +13,23 @@ WriteMakefile(
 	'VERSION'       => '0.6_01',
 	
     'PM'            => {
-    	'lib/iTunes.pm'       => '$(INST_LIBDIR)/iTunes.pm',
-    	'lib/Playlist.pm'     => '$(INST_LIBDIR)/iTunes/Playlist.pm',
+     	'lib/AppleScript.pm'  => '$(INST_LIBDIR)/iTunes/AppleScript.pm',
     	'lib/Item.pm'         => '$(INST_LIBDIR)/iTunes/Item.pm',
+	   	'lib/iTunes.pm'       => '$(INST_LIBDIR)/iTunes.pm',
     	'lib/Parse.pm'        => '$(INST_LIBDIR)/iTunes/Library/Parse.pm',
+    	'lib/Playlist.pm'     => '$(INST_LIBDIR)/iTunes/Playlist.pm',
+    	'lib/Preferences.pm'  => '$(INST_LIBDIR)/iTunes/Preferences.pm',
     	'lib/Write.pm'        => '$(INST_LIBDIR)/iTunes/Library/Write.pm',
-    	'lib/AppleScript.pm'  => '$(INST_LIBDIR)/iTunes/AppleScript.pm',
     	'doc/file_format.pod' => '$(INST_LIBDIR)/iTunes/FileFormat.pm',
     	},
 
 	'PREREQ_PM' => {
+		File::Find::Rule  => undef,
+		Mac::AppleScript  => undef,
+		Mac::PropertyList => undef,
 		Test::Manifest    => undef,
 		Test::More        => undef,
 		Test::Pod         => undef,
-		Mac::AppleScript  => undef,
-		Mac::PropertyList => undef,
 		},
 		    	
     test   => { TESTS      => scalar get_t_files() },
