@@ -1,6 +1,6 @@
 # $Id$
 
-use Test::More tests => 43;
+use Test::More tests => 44;
 
 use Mac::iTunes;
 use Mac::iTunes::AppleScript qw(:boolean :state :size);
@@ -57,6 +57,9 @@ is( $controller->state, PLAYING, 'Player is playing' );
 sleep 3;
 ok( $controller->playpause,      'Toggle playpause to pause'  );
 is( $controller->state, PAUSED,  'Player is paused' );
+
+# the application needs to be visible for these tests
+is( $controller->browser_window_visible(TRUE), TRUE, 'Make browser visible' );
 
 ok( $controller->visuals_enabled(FALSE), 'Set visuals to false' );
 is( $controller->visuals_enabled, FALSE, 'Set visuals to false' );
