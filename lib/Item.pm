@@ -1,5 +1,6 @@
 # $Id$
 package Mac::iTunes::Item;
+use strict;
 
 use vars qw($VERSION);
 
