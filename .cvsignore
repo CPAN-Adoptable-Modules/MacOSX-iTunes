@@ -12,3 +12,4 @@ blibdirs
 NO_MAC
 t/test_manifest
 t/test_manifest
+META.yml
