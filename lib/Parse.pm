@@ -328,7 +328,7 @@ sub hohm
 		
 		eat( $ref, 4 ) for 1 .. 2;
 
-		($data) = unpack( 'A*', ${eat( $ref, $next_len )} );
+		$data = _get_unicode( $ref, $next_len );
 		_strip_nulls( $data ); # XXX: unicode
 
 		$hohm{ $hohm_types{$type} } = $data;
@@ -388,8 +388,7 @@ sub hohm
 
 		eat( $ref, 2*4 );
 
-		my ($playlist) = unpack( 'A*', ${eat( $ref, $next_len )} );
-		_strip_nulls( $playlist );
+		my $playlist = _get_unicode( $ref, $next_len );
 		$playlist = 'Library' if $playlist eq '####!####';
 
 		warn "\tplaylist is [$playlist]\n" if $Debug;
@@ -490,7 +489,7 @@ sub peek
 
 	my $data = substr( $$ref, 0, 1 );
 
-	sprintf "%x", unpack( "S", "\000" . $data );
+	sprintf "%x", unpack( "v", "\000" . $data );
 	}
 
 sub eat
@@ -516,10 +515,10 @@ sub eat
 	}
 
 sub _get_string    { unpack( "A*", ${eat( $_[0], $_[1] )} ) }
-sub _get_long_int  { unpack( "I",  ${eat( $_[0], 4     )} ) }
-sub _get_short_int { unpack( "S",  ${eat( $_[0], 2     )} ) }
+sub _get_long_int  { unpack( "N",  ${eat( $_[0], 4     )} ) }
+sub _get_short_int { unpack( "n",  ${eat( $_[0], 2     )} ) }
 
-sub _get_char_int  { unpack( 'S', "\000" . ${eat( $_[0], 1 )} ) }
+sub _get_char_int  { unpack( 'n', "\000" . ${eat( $_[0], 1 )} ) }
 
 sub _get_marker    { _get_string( $_[0], 4 )            }
 sub _get_length    { _get_long_int( @_ )                }
