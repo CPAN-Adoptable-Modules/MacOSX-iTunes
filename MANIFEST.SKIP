@@ -1,0 +1,12 @@
+.DS_Store
+.cvsignore
+.releaserc
+TO_DO
+applescript/Apple/
+examples/summary.pl
+hack/
+CVS
+MANIFEST.bak
+pm_to_blib
+Makefile$
+Makefile.old
