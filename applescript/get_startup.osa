@@ -1,0 +1,8 @@
+tell application "Finder"
+	repeat with i from 1 to (count of disks)
+		if startup of disk i is true then
+			set myStartUp to name of disk i
+		end if
+	end repeat
+	return "Startup name is --> " & myStartUp
+end tell
