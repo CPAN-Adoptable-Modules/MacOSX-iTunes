@@ -226,9 +226,6 @@ sub _make_volume
 		-troughcolor  => '#FFFF00',
 		-borderwidth  => 1,
 		-foreground   => '#000000',
-		-command      => sub { 
-			
-			},
 		)->pack(
 			-anchor => 'e',
 			-side   => 'top',
@@ -391,9 +388,9 @@ sub _track_list_box
 	my $color = $Config->list_color || '00cccc';
 	
 	my $list = $frame->Scrolled('Listbox',
-		-scrollbars       => 're',
-		-selectbackground => "#$color",
-		-selectmode       => "single",
+		-scrollbars          => 're',
+		-selectbackground    => "#$color",
+		-selectmode          => "single",
 		)->pack(
 			-fill   => 'y', 
 			-fill   => 'x', 
@@ -402,6 +399,8 @@ sub _track_list_box
 		
 	my $tracks = $Actions->{get_tracks}->( 'Library' );
 	
+	$list->bind( '<Double-Button-1>', sub { $Actions->{play_track}->() } );
+		
 	foreach my $track ( @$tracks )
 		{
 		$list->insert( 'end', $track );
@@ -415,7 +414,7 @@ sub _repeat
 	my $mw    = shift;
 	my $scale = shift;
 	
-	$mw->repeat( 3_000, 
+	$mw->repeat( 4_000, 
 		sub { 
 			my $state  = $Actions->{get_state}->();
 			my $volume = $Actions->{volume}->();
