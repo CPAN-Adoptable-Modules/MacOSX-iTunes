@@ -1,12 +1,22 @@
+package MacOSX::iTunes::FileFormat;
+
 =head1 NAME
 
 iTunes Music Library File Format
 
 =head1 SYNOPSIS
 
+This file describes the C<iTunes Music Library> file format
 
 =head1 DESCRIPTION
 
+The C<iTunes Music Library> file contains a series of variable length
+blocks.  The first part of the file refers to iTunes in general and
+to the number of playlists the file contains. The middle part holds
+all of the MP3 data, which is only stored once per item.  Each item
+has a unique identifier used later in the file.  The last part of the
+file contains a list of playlists, and within each playlist is a list
+of the item identifiers from the middle of the file.
 
 =head2 Markers
 
@@ -24,7 +34,7 @@ you cannot simply read to the next marker.
 
 =item htim -- master item record
 
-=item hohm -- data sublock, multi-purpose
+=item hohm -- data sublock, multi-purpose (in htim, hpim blocks)
 
 =item hplm -- playlist list header ?
 
@@ -40,8 +50,8 @@ you cannot simply read to the next marker.
 
 =item hdfm
 
-	Byte   Length  Comment
-	-----------------------
+    Byte   Length  Comment
+    -----------------------
       0       4     'hdfm'
       4       4     L = header length
       8       4     file length ?
@@ -52,8 +62,8 @@ you cannot simply read to the next marker.
 
 =item hdsm
 
-	Byte   Length  Comment
-	-----------------------
+    Byte   Length  Comment
+    -----------------------
       0       4     'hdsm'
       4       4     L = header length
       8       4     ?
@@ -62,8 +72,8 @@ you cannot simply read to the next marker.
 
 =item htlm
 
-	Byte   Length  Comment
-	-----------------------
+    Byte   Length  Comment
+    -----------------------
       0       4     'htlm'
       4       4     L = header length
       8       4     number of songs
@@ -71,8 +81,8 @@ you cannot simply read to the next marker.
 
 =item hplm
 
-	Byte   Length  Comment
-	-----------------------
+    Byte   Length  Comment
+    -----------------------
       0       4     'htlm'
       4       4     L = header length
       8       4     number of playlists
@@ -80,8 +90,8 @@ you cannot simply read to the next marker.
 
 =item htim
 
-	Byte   Length  Comment
-	-----------------------
+    Byte   Length  Comment
+    -----------------------
       0       4     'htim'
       4       4     L = header length
       8       4     R = total record length, including sub-blocks
@@ -100,8 +110,8 @@ you cannot simply read to the next marker.
      
 =item hohm
 
-	Byte   Length  Comment
-	-----------------------
+    Byte   Length  Comment
+    -----------------------
       0       4     'htim'
       4       4     L = header length
       8       4     R = total record length
@@ -116,8 +126,8 @@ hohm block.  Offsets start at 0', which is byte 28 in the record.
 
 =item hohm type 1
 
-	Byte   Length  Comment
-	-----------------------
+    Byte   Length  Comment
+    -----------------------
       0'      2     ?
       2       2     n = length of next thingy ?
       4       n     ?
@@ -142,21 +152,21 @@ hohm block.  Offsets start at 0', which is byte 28 in the record.
       
 =item hohm type 100 (0x64)
 
-	Byte   Length  Comment
-	-----------------------
-	  0'     12      ?
-	 12       4      N = length of playlist name
-	 16       8      ?
-	 24       N      playlist name
-	 
+    Byte   Length  Comment
+    -----------------------
+      0'     12      ?
+     12       4      N = length of playlist name
+     16       8      ?
+     24       N      playlist name
+     
 =item other hohm types 
     
-	Byte   Length  Comment
-	-----------------------
-	  0'     12      ?
- 	 12       4      N = length of data
- 	 16       8      ?
- 	 24       N      data
+    Byte   Length  Comment
+    -----------------------
+      0'     12      ?
+     12       4      N = length of data
+     16       8      ?
+     24       N      data
    
       
      
@@ -164,27 +174,36 @@ hohm block.  Offsets start at 0', which is byte 28 in the record.
      
 =item hpim
 
-	Byte   Length  Comment
-	-----------------------
-	  0       4      hpim
- 	  4       4      N = length of data
- 	  8       4      ?
- 	 12       4      ?
- 	 16       4      number of items (hptm) in playlist
+    Byte   Length  Comment
+    -----------------------
+      0       4      hpim
+      4       4      N = length of data
+      8       4      ?
+     12       4      ?
+     16       4      number of items (hptm) in playlist
    
 
 =item hptm
 
+=cut
+
+"See why 1984 won't be like 1984";
+
+=back
+
+=head1 TO DO
+
+* everything - the list of things already done is much shorter.
+
+=head1 BUGS
+
+* i've guessed on almost everything in this document, but it seems
+to work.
 
 =head1 AUTHOR
 
-brian d foy, bdfoy@cpan.org
+Copyright 2002, brian d foy <bdfoy@cpan.org>
 
-=head1 COPYRIGHT
-
-Copyright 2002, brian d foy
-
-=head1 SEE ALSO
-
+You may redistribute this under the same terms as Perl.
 
 =cut
