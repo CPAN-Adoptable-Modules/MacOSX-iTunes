@@ -4,4 +4,4 @@ use Test::More tests => 1;
 use Test::Prereq;
 
 print "bail out! Makefile.PL needs help!"
-	unless prereq_ok( undef, undef, [qw(MacOSX::iTunes::FileFormat)]);
+	unless prereq_ok( undef, undef, [qw(Mac::iTunes::FileFormat)]);
