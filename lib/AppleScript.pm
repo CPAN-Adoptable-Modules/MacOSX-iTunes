@@ -230,7 +230,7 @@ sub open_url
 	my $self = shift;
 	my $url  = shift;
 
-	$self->tell("open location $url");
+	$self->tell( qq|open location "$url"| );
 	}
 
 =back
