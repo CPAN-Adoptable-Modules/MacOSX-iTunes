@@ -13,18 +13,18 @@ Mac::iTunes::Item
 
 =head1 SYNOPSIS
 
-use Mac::iTunes::Item;
+	use Mac::iTunes::Item;
 
-my $item = Mac::iTunes::Item->new( 
-	{
-	title    => $title,
-	genre    => $genre,
-	seconds  => $seconds,
-	file     => $path,
-	artist   => $artist,
-	url      => $url,
-	}
-	);
+	my $item = Mac::iTunes::Item->new( 
+		{
+		title    => $title,
+		genre    => $genre,
+		seconds  => $seconds,
+		file     => $path,
+		artist   => $artist,
+		url      => $url,
+		}
+		);
 	
 =head1 DESCRIPTION
 
