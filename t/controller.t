@@ -1,6 +1,6 @@
 # $Id$
 
-use Test::More tests => 42;
+use Test::More tests => 43;
 
 use Mac::iTunes;
 use Mac::iTunes::AppleScript qw(:boolean :state :size);
@@ -37,6 +37,7 @@ is( $controller->volume($volume), $volume,  'Set volume'   );
 is( $controller->volume,          $volume,  'Fetch volume' );
 is( $controller->volume(150),         100,  'Set volume past maximum' );
 is( $controller->volume(-5),            0,  'Fetch volume below minimum' );
+is( $controller->volume(50),           50,  'Fetch volume to middle of range' );
 
 is( $controller->mute(TRUE),  TRUE,  'Set mute on'   );
 is( $controller->mute,        TRUE,  'Fetch mute while on' );
@@ -63,10 +64,8 @@ ok( $controller->full_screen(FALSE),     'Set full-screen to false' );
 is( $controller->full_screen, FALSE,     'Full screen is false' );
 ok( $controller->visuals_enabled(TRUE),  'Set visuals to true' );
 is( $controller->visuals_enabled, TRUE,  'Visuals to true' );
-sleep 3;
 ok( $controller->full_screen(TRUE),  'Set full-screen to true' );
 is( $controller->full_screen, TRUE,  'Full screen is true' );
-sleep 3;
 ok( $controller->full_screen(FALSE), 'Set full-screen to false' );
 is( $controller->full_screen, FALSE, 'Full screen is false' );
 
@@ -74,7 +73,6 @@ foreach my $size ( SMALL, MEDIUM, LARGE )
 	{
 	ok( $controller->visual_size($size), "Set visual size to $size" );
 	is( $controller->visual_size, $size, "Visual size is $size" );
-	sleep 3;
 	}
 	
 ok( $controller->visuals_enabled(FALSE), 'Set visuals to false' );
