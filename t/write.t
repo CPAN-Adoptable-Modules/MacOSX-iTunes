@@ -1,5 +1,5 @@
 # $Id$
 
-use Test::More test => 1;
+use Test::More tests => 1;
 
 ok( 1, "Write.pm");
