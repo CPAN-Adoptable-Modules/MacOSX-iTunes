@@ -14,9 +14,15 @@ $VERSION = '0.7';
 
 =head1 NAME
 
-Mac::iTunes -
+Mac::iTunes - interact with and control iTunes
 
 =head1 SYNOPSIS
+
+use Mac::iTunes;
+
+my $controller = Mac::iTunes->controller();
+
+my $library = Mac::iTunes->new( $library_path );
 
 =head1 DESCRIPTION
 
@@ -269,7 +275,21 @@ sub _not_implemented
 
 * everything - the list of things already done is much shorter.
 
+* speed everything up 100 times
+
 =head1 BUGS
+
+* plenty
+
+=head1 SOURCE AVAILABILITY
+
+This source is part of a SourceForge project which always has the
+latest sources in CVS, as well as all of the previous releases.
+
+	https://sourceforge.net/projects/brian-d-foy/
+	
+If, for some reason, I disappear from the world, one of the other
+members of the project can shepherd this module appropriately.
 
 =head1 AUTHOR
 
