@@ -1,9 +1,9 @@
 # $Id$
 
-use Test::More tests => 16;
+use Test::More tests => 18;
 
-use Mac::iTunes::Playlist;
-use Mac::iTunes;
+BEGIN { use_ok( 'Mac::iTunes::Playlist' ); }
+BEGIN { use_ok( 'Mac::iTunes' ); }
 
 my $Title = 'Schoolhouse Rock';
 
@@ -28,7 +28,7 @@ ok(  $iTunes->delete_playlist( $playlist ),     'Delete playlist' );
 ok( !$iTunes->playlist_exists( $playlist ),	'Playlist exists after delete' );
 is(  $iTunes->playlists, 0,                     'Playlist count after delete'  );
 
-ok( $iTunes->add_playlist( ) == 0,          'Check null playlist'   );
-ok( $iTunes->add_playlist( undef ) == 0,    'Check undef playlist'  );
-ok( $iTunes->add_playlist( 'Title' ) == 0,  'Check string playlist' );
-ok( $iTunes->add_playlist( $iTunes ) == 0,  'Check object type'     );
+ok( !$iTunes->add_playlist( ),          'Check null playlist'   );
+ok( !$iTunes->add_playlist( undef ),    'Check undef playlist'  );
+ok( !$iTunes->add_playlist( 'Title' ),  'Check string playlist' );
+ok( !$iTunes->add_playlist( $iTunes ),  'Check object type'     );
