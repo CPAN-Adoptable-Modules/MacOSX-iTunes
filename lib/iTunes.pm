@@ -61,7 +61,21 @@ sub controller
 	
 	return Mac::iTunes::AppleScript->new();
 	}
+
+=item preferences( [ FILENAME ]
+
+
+=cut
+
+sub preferences
+	{
+	my $class    = shift;
+	my $filename = shift;
 	
+	require Mac::iTunes::Preferences;
+	Mac::iTunes::Preferences->parse_file( $filename );
+	}
+		
 =item playlists
 
 In list context, returns a list of the titles of the playlists.
