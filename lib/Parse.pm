@@ -2,13 +2,15 @@
 package Mac::iTunes::Library::Parse;
 use strict;
 
-use vars qw($Debug $Ate %hohm_types $iTunes_version);
+use vars qw($Debug $Ate %hohm_types $iTunes_version $VERSION);
 
 use Carp qw(carp croak);
 
 use Mac::iTunes;
 use Mac::iTunes::Item;
 use Mac::iTunes::Playlist;
+
+$VERSION = sprintf "%d.%02d", q$Revision$ =~ m/ (\d+) \. (\d+) /gx;
 
 $Debug = $ENV{ITUNES_DEBUG} || 0;
 $Ate   = 0;
@@ -85,7 +87,7 @@ sub parse
 		}
 		
 	require Data::Dumper;
-	
+	$Data::Dumper::Indent = 1;
 	print STDERR Data::Dumper::Dumper( $itunes ), "\n" if $Debug;
 	
 	$itunes;	
@@ -328,10 +330,10 @@ sub hohm
 		my ($volume) = unpack( 'A*', ${eat( $ref, $next_len )} );
 		print STDERR "\tVolume is [$volume]\n" if $Debug;
 		$hohm{volume} = $volume;
-		eat( $ref, 5*4 );
-		
+		eat( $ref, 27 - $next_len ); # ???  why 27?
+
 		my( $some_date ) = unpack( 'I', ${eat( $ref, 4 )} );
-		printf STDERR "\tSome date is %X\n", $some_date if $Debug;
+		my( $some_date ) = unpack( 'I', $data );
 		
 		$some_date = _date_parse( $some_date );
 			
@@ -339,7 +341,7 @@ sub hohm
 			if $Debug;
 
 		eat( $ref, 2*4 ) if $iTunes_version =~ /^3/;
-		
+
 		($next_len) = unpack( 'S', "\000" . ${eat( $ref, 1 )} );
 		print STDERR "\tfilename length is $next_len\n" if $Debug;
 
@@ -403,6 +405,9 @@ sub hohm
 		eat( $ref, 2*4 );
 		
 		my ($playlist) = unpack( 'A*', ${eat( $ref, $next_len )} );
+		$playlist =~ s/\000//g;
+		$playlist = 'Library' if $playlist eq '####!####';
+		
 		print STDERR "\tplaylist is [$playlist]\n" if $Debug;
 		$hohm{playlist} = $playlist;
 	
@@ -461,6 +466,9 @@ sub hpim
 	foreach my $index ( 1 .. $hohms )
 		{
 		my $result = $Dispatch{'hohm'}->( $ref );
+		require Data::Dumper;
+		
+		print STDERR Data::Dumper::Dumper( $result ) if $Debug;
 		
 		if( $result->{type} == 0x64 )
 			{
@@ -521,7 +529,7 @@ sub eat
 	my $ref = shift;
 	my $l   = shift;
 	$Ate += $l;
-	
+
 	my $data = substr( $$ref, 0, $l );
 	
 	substr( $$ref, 0, $l ) = '';
