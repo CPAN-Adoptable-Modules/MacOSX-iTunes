@@ -548,6 +548,52 @@ SCRIPT
 
 =back
 
+=head2 Methods for windows
+
+=over 4
+
+=item browser_window_visible( [TRUE|FALSE] )
+
+=item eq_window_visible( [TRUE|FALSE] )
+
+Returns the value of the visible property of the window. A
+window is visible if it is not minimized.
+
+=cut
+
+sub browser_window_visible
+	{
+	my $self   = shift;
+	my $state  = shift;
+	
+	$self->_window_visible( 'browser window 1', $state );
+	}
+	
+sub eq_window_visible
+	{
+	my $self   = shift;
+	my $state  = shift;
+	
+	$self->_window_visible( 'EQ window 1', $state );
+	}
+	
+sub _window_visible
+	{
+	my $self   = shift;
+	my $window = shift;
+	my $state  = shift;
+	
+	if( defined $state )
+		{
+		$state = $state ? TRUE : FALSE;
+		$self->tell( "set visible of $window to $state" );
+		}
+		
+	$self->tell( "return visible of $window" );
+	}
+	
+=back
+
 =head2 General AppleScript methods
 
 =over
