@@ -37,19 +37,19 @@ sub parse_file
 	my $string = do { local $/; <$fh> };
 	close $fh;
 	
-	$class->parse( \$string );
+	$class->parse( $string );
 	}
 	
 =item parse( STRING )
 
 =cut
 
-sub parse($)
+sub parse
 	{
 	my $class  = shift;
 	my $string = shift;
 	
-	my $plist = Mac::PropertyList::parse_plist($string);
+	my $plist = Mac::PropertyList::parse_plist( $string );
 	
 	bless $plist, $class;
 	}
