@@ -27,12 +27,26 @@ You may use this software under the same terms as Perl itself.
 
 =cut
 
+use ConfigReader::Simple;
 use MP3::Info;
-use Data::Dumper;
+use Text::Template qw(fill_in_file);
+
+my $Config = "$ENV{HOME}/.mp3info.rc";
+
+my $config = ConfigReader::Simple->new( $Config );
+die "Could not get configuration" unless ref $config;
+
+my $template = $config->template;
+die "Could not find template [$template]!" unless -e $template;
 
 my $file = $ARGV[0];
 
-my $tag  = get_mp3tag($file) or die "No TAG info";
-my $info = get_mp3info($file) or die "No info";
+foreach my $file ( @ARGV )
+	{
+	my $tag  = get_mp3tag($file) or die "No TAG info";
+	my $info = get_mp3info($file) or die "No info";
 
-print Data::Dumper::Dumper( $tag, $info );
+	my $hash = { %$tag, %$info, file => $file, size => -s $file };
+
+	print fill_in_file( $template, HASH => $hash );
+	}
