@@ -1,6 +1,6 @@
 # $Id$
 
-use Test::More tests => 41;
+use Test::More tests => 42;
 
 use Mac::iTunes;
 use Mac::iTunes::AppleScript qw(:boolean :state :size);
@@ -23,11 +23,11 @@ foreach my $property ( @properties )
 	}
 
 ok( $controller->activate,         'Activate iTunes'    );
-ok( $controller->frontmost(TRUE),  'Send to background' );
-is( $controller->frontmost, TRUE,  'Player is in background' );
 
 SKIP: {
-skip "iTunes doesn't handle frontmost correctly (yet)", 2, "set frontmost to 0";
+skip "iTunes doesn't handle frontmost correctly (yet)", 4, "set frontmost to 0";
+ok( $controller->frontmost(TRUE),  'Send to background' );
+is( $controller->frontmost, TRUE,  'Player is in background' );
 ok( $controller->frontmost(0),     'Send to background' );
 is( $controller->frontmost, FALSE, 'Player is in background' );
 };
@@ -47,13 +47,13 @@ ok( $controller->stop,           'Stop controller'   );
 is( $controller->state, STOPPED, 'Player is stopped' );
 ok( $controller->play,           'Play controller'   );
 is( $controller->state, PLAYING, 'Player is playing' );
-sleep 5;
+sleep 3;
 ok( $controller->pause,          'Pause controller'  );
 is( $controller->state, PAUSED,  'Player is paused' );
-sleep 5;
+sleep 3;
 ok( $controller->playpause,      'Toggle playpause to play'  );
 is( $controller->state, PLAYING, 'Player is playing' );
-sleep 5;
+sleep 3;
 ok( $controller->playpause,      'Toggle playpause to pause'  );
 is( $controller->state, PAUSED,  'Player is paused' );
 
