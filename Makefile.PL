@@ -1,6 +1,12 @@
 # $Id$
 use ExtUtils::MakeMaker;
 
+open IN,  "mp3/iTunes_Music_Library";
+open OUT, "> mp3/iTunes Music Library";
+
+print OUT do { local $/; <IN> };
+
+
 WriteMakefile(
     'NAME'		    => 'MacOSX::iTunes',
     #'VERSION_FROM'	=> 'lib/iTunes.pm',
