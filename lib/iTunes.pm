@@ -11,7 +11,7 @@ use Mac::iTunes::Playlist;
 
 require Exporter;
 
-$VERSION = '0.83_01';
+$VERSION = '0.84';
 
 =head1 NAME
 
@@ -30,11 +30,11 @@ my $library = Mac::iTunes->new( $library_path );
 
 =head2 METHODS
 
-=over 4 
+=over 4
 
 =item new()
 
-Creates a new, empty Mac::iTunes object.  If you want to read a 
+Creates a new, empty Mac::iTunes object.  If you want to read a
 current library, use read().
 
 Returns false on failure.
@@ -68,7 +68,7 @@ sub controller
 	my $self = {};
 
 	eval "use Mac::iTunes::AppleScript";
-	
+
 	if( $@ )
 		{
 		carp "You need Mac::iTunes::AppleScript to use an iTunes controller";
@@ -89,12 +89,12 @@ sub preferences
 	{
 	my $class    = shift;
 	my $filename = shift;
-	
+
 	$filename = "$ENV{HOME}/Library/Preferences/com.apple.iTunes.plist"
 		unless defined $filename;
 
 	require Mac::iTunes::Preferences;
-	
+
 	Mac::iTunes::Preferences->parse_file( $filename );
 	}
 
@@ -118,7 +118,7 @@ sub playlists
 
 Takes a playlist title argument.
 
-Extracts a Mac::Playlist object from the music library.  Returns 
+Extracts a Mac::Playlist object from the music library.  Returns
 undef if the playlist does not exist.
 
 =cut
@@ -166,8 +166,8 @@ sub add_playlist
 
 =item delete_playlist( PLAYLIST | OBJECT )
 
-Takes a playlist title or Mac::iTunes::Playlist object as 
-an argument.  
+Takes a playlist title or Mac::iTunes::Playlist object as
+an argument.
 
 Removes the playlist from the music library.
 
@@ -192,8 +192,8 @@ sub delete_playlist
 
 =item playlist_exists( PLAYLIST | OBJECT )
 
-Takes a playlist title or Mac::iTunes::Playlist object as 
-an argument.  
+Takes a playlist title or Mac::iTunes::Playlist object as
+an argument.
 
 Returns true if the playlist exists in the music library, and false
 otherwise.
@@ -203,7 +203,7 @@ the same title, or if the object matches another object in
 the music library.  See Mac::iTunes::Playlist to see how
 one playlist object may match another.
 
-NOTE:  at the moment, if you use an object argument, the 
+NOTE:  at the moment, if you use an object argument, the
 function extracts the title of the playlist and sees if that
 title is in the library.  this is just a placeholder until i
 come up with something better.
@@ -223,13 +223,13 @@ sub playlist_exists
 		$title = $title->title;
 		}
 
-	return exists ${ $self->{_playlists} }{ $title };	
+	return exists ${ $self->{_playlists} }{ $title };
 	}
 
 =item read( FILENAME )
 
 Reads the named iTunes Music Library file and uses it to form the
-music library object, replacing any other data already in the 
+music library object, replacing any other data already in the
 object.
 
 =cut
@@ -307,14 +307,14 @@ Mac OS X
 This source is part of a SourceForge project which always has the
 latest sources in CVS, as well as all of the previous releases.
 
-	https://sourceforge.net/projects/brian-d-foy/
+	http://sourceforge.net/projects/brian-d-foy/
 
 If, for some reason, I disappear from the world, one of the other
 members of the project can shepherd this module appropriately.
 
 =head1 AUTHOR
 
-brian d foy,  E<lt>bdfoy@cpan.orgE<gt>
+brian d foy,  C<< <bdfoy@cpan.org> >>
 
 =head1 COPYRIGHT
 

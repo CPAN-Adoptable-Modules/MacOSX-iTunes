@@ -76,4 +76,5 @@ t/track_info.t
 t/write.t
 tk/tk-itunes.pl
 tk/tkitunes.rc
+README
 META.yml

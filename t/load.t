@@ -19,7 +19,7 @@ sub my_find
 	find(
 		sub { 
 			return unless -f $_;
-			if( /\.pm/ )
+			if( /\.pm$/ )
 				{
 				my $file = $File::Find::name;
 				$file =~ s|blib/lib/||;

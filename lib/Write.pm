@@ -22,7 +22,7 @@ file.
 
 =head1 METHODS
 
-=over 4 
+=over 4
 
 =item as_xml
 
@@ -121,7 +121,7 @@ XML
 This source is part of a SourceForge project which always has the
 latest sources in CVS, as well as all of the previous releases.
 
-	https://sourceforge.net/projects/brian-d-foy/
+	http://sourceforge.net/projects/brian-d-foy/
 
 If, for some reason, I disappear from the world, one of the other
 members of the project can shepherd this module appropriately.
@@ -136,7 +136,7 @@ L<Mac::iTunes>
 
 =head1 AUTHOR
 
-brian d foy,  E<lt>bdfoy@cpan.orgE<gt>
+brian d foy,  C<< <bdfoy@cpan.org> >>
 
 =head1 COPYRIGHT
 

@@ -1,6 +1,18 @@
 # $Id$
 use ExtUtils::MakeMaker;
 
+eval "use Test::Manifest";
+unless( $@ )
+	{
+	*ExtUtils::MM_Any::test_via_harness = sub {
+		my($self, $perl, $tests) = @_;
+	
+		return qq|\t$perl "-MTest::Manifest" | .
+		   qq|"-e" "run_t_manifest(\$(TEST_VERBOSE), '\$(INST_LIB)', | .
+		   qq|'\$(INST_ARCHLIB)')"\n|;
+		}
+	}
+	
 # if we are running under Test::Prereq, we do not want side effects
 my $TestPrereq = grep { m/Test.{1,2}Prereq.pm$/ } keys %INC;
 
@@ -10,20 +22,7 @@ unless( $TestPrereq )
 	open OUT, "> mp3/iTunes Music Library";
 	
 	print OUT do { local $/; <IN> };
-	}
-	
-sub ExtUtils::MM_Any::test_via_harness
-	{
-    my($self, $perl, $tests) = @_;
 
-    return qq|\t$perl "-MTest::Manifest" | .
-           qq|"-e" "run_t_manifest(\$(TEST_VERBOSE), '\$(INST_LIB)', | .
-           qq|'\$(INST_ARCHLIB)')"\n|;
-	}
-
-
-unless( $TestPrereq )
-	{
 	open my($fh), "> t/test_manifest";
 	print $fh <<"HERE";
 load.t

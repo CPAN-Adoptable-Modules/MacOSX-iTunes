@@ -1,7 +1,7 @@
 # $Id$
 use strict;
 
-use lib  qw(./t/lib ./lib);
+use lib qw(./t/lib ./lib);
 
 use Test::More;
 use Mac::iTunes;

@@ -22,13 +22,13 @@ This class is usually used by Mac::iTunes.
 
 	use Mac::iTunes;
 	my $library = Mac::iTunes->new( $library_path );
-	
+
 If you want to fool with the data structure, you can use the parse
 functions.
 
 	use Mac::iTunes::Library::Parse;
 	my $library = Mac::iTunes::Library::Parse::parse( FILENAME );
-	
+
 =head1 DESCRIPTION
 
 Most functions output debugging information if the environment
@@ -48,13 +48,13 @@ This class is usually used by Mac::iTunes.
 
 	use Mac::iTunes;
 	my $library = Mac::iTunes->new( $library_path );
-	
+
 If you want to fool with the data structure, you can use the parse
 functions.
 
 	use Mac::iTunes::Library::Parse;
 	my $library = Mac::iTunes::Library::Parse::parse( FILENAME );
-	
+
 =head1 DESCRIPTION
 
 Most functions output debugging information if the environment
@@ -74,13 +74,13 @@ This class is usually used by Mac::iTunes.
 
 	use Mac::iTunes;
 	my $library = Mac::iTunes->new( $library_path );
-	
+
 If you want to fool with the data structure, you can use the parse
 functions.
 
 	use Mac::iTunes::Library::Parse;
 	my $library = Mac::iTunes::Library::Parse::parse( FILENAME );
-	
+
 =head1 DESCRIPTION
 
 Most functions output debugging information if the environment
@@ -104,7 +104,7 @@ my %Dispatch = (
 	hptm => \&hptm, # song in playlist
 	);
 
-	
+
 =over 4
 
 =item parse( FILEHANDLE )
@@ -129,7 +129,7 @@ sub parse
 
 	require Data::Dumper;
 	$Data::Dumper::Indent = 1;
-	
+
 	while( $data )
 		{
 		$data =~ m/^(....)/;
@@ -148,15 +148,15 @@ sub parse
 			{
 			warn "There are " . @result . " items in result\n" if $Debug;
 			warn Data::Dumper::Dumper( @result ), "\n" if $Debug;
-			
+
 			while( my $set = shift @result )
 				{
 				my $playlist = shift @$set;
 				$itunes->add_playlist( $playlist );
-				
+
 				foreach my $song ( @$set )
 					{
-					warn "Could not add item! [$song]" 
+					warn "Could not add item! [$song]"
 						unless $playlist->add_item( $songs{$song} );
 					}
 				}
@@ -165,7 +165,7 @@ sub parse
 
 	warn Data::Dumper::Dumper( $itunes ), "\n" if $Debug;
 
-	$itunes;	
+	$itunes;
 	}
 
 =item hdfm( DATA )
@@ -222,7 +222,7 @@ sub htlm
 	my $songs  = _get_count( $ref );
 	warn "\tsong count is $songs\n" if $Debug;
 
-	_leftovers( $ref, $length );	
+	_leftovers( $ref, $length );
 
 	return $songs;
 	}
@@ -250,9 +250,9 @@ sub htim
 	my $id             = _get_long_int( $ref );
 	my $type           = _get_long_int( $ref );
 	warn sprintf "\tid is %x\n\ttype is %s\n", $id, $type if $Debug;
-	
+
 	_get_long_int( $ref );
-	
+
 	my $file_type      = _get_string( $ref, 4 );
 	my $date_modified  = _date_parse( _get_date( $ref ) );
 	my $bytes          = _get_long_int( $ref );
@@ -261,7 +261,7 @@ sub htim
 	my $tracks         = _get_long_int( $ref );
 
 	_get_short_int( $ref );
-	
+
 	my $year           = _get_short_int( $ref );
 
 	_get_short_int( $ref );
@@ -307,10 +307,10 @@ sub htim
 	warn "\tplay count2 is $play_count2\n" if $Debug;
 	warn "\tcompilation is $compilation\n" if $Debug;
 	warn "\tfile type is $file_type\n" if $Debug;
-	warn "\tplay date is $play_date [" . 
+	warn "\tplay date is $play_date [" .
 		gmtime($play_date) . "]\n" if $Debug;
 	warn "\tdisk is $disk of $disks\n" if $Debug;
-	printf STDERR "\trating is %xh [%dd] => %d stars\n", $rating, 
+	printf STDERR "\trating is %xh [%dd] => %d stars\n", $rating,
 		$rating, $rating / 20 if $Debug;
 	warn "\tadd date is $add_date\n" if $Debug;
 
@@ -318,7 +318,7 @@ sub htim
 
 	my %songs;
 	foreach my $index ( 1 .. $hohms )
-		{		
+		{
 		my $hohm = $Dispatch{'hohm'}->( $ref );
 
 		foreach my $key ( keys %$hohm )
@@ -402,7 +402,7 @@ sub hohm
 	my $type      = _get_long_int( $ref );
 
 	die "Record type is not defined!" unless defined $type;
-	
+
 	warn "\tlength is $length\n" if $Debug;
 	warn "\t\ttype is [$type] => $hohm_types{$type}\n" if $Debug;
 
@@ -414,7 +414,7 @@ sub hohm
 		_skip( $ref, 4 ) for 1 .. 3;
 
 		my $next_len = _get_length( $ref );
-		
+
 		_skip( $ref, 4 ) for 1 .. 2;
 
 		$data = _get_unicode( $ref, $next_len );
@@ -422,7 +422,7 @@ sub hohm
 		$hohm{ $hohm_types{$type} } = $data;
 		}
 	elsif( $type == 1 )
-		{		
+		{
 		_get_long_int(  $ref ) for 1 .. 3;
 		_get_short_int( $ref );
 
@@ -438,7 +438,7 @@ sub hohm
 		_skip( $ref, 27 - $next_len ); # ???  why 27?
 
 		my $some_date = _date_parse( _get_date( $ref ) );
-		warn "\t\tsome date is [" . _sprint_date( $some_date ) . "]\n" 
+		warn "\t\tsome date is [" . _sprint_date( $some_date ) . "]\n"
 			if $Debug;
 
 		_skip( $ref, 2*4 );# if $iTunes_version =~ /^(?:3|4)/; #???
@@ -447,7 +447,7 @@ sub hohm
 		warn "\t\tnext length is $next_len\n" if $Debug;
 		$hohm{filename} = _get_unicode( $ref, $next_len );
 		warn "\t\tFilename is $hohm{filename}\n" if $Debug;
-		
+
 		_skip( $ref, 71 - $next_len );
 
 		$hohm{filetype} = _get_string( $ref, 4 );
@@ -459,32 +459,32 @@ sub hohm
 		$next_len        = _get_length( $ref );
 		$hohm{directory} = _get_unicode( $ref, $next_len ); # 0 bytes?
 		warn "\t\tdirectory is $hohm{directory}\n" if $Debug;
-		
+
 		if( $iTunes_version =~ /^(?:3|4)/ )
 			{
 			_skip( $ref, 7 ); # ???
-			
+
 			my $some_date = _date_parse( _get_date( $ref ) );
-			
+
 			_skip( $ref, 48 );
-			
+
 			$next_len    = _get_short_length( $ref );
 			my $mac_path = _get_string( $ref, $next_len );
 			warn "\t\tmac path is $mac_path\n" if $Debug;
-	
+
 			while( _peek( $ref ) ne '0e' ) { _skip( $ref, 1 ) };
 			_skip( $ref, 1 );
-			
+
 			$next_len     = _get_short_length( $ref );
 			my $chars     = _get_short_length( $ref );
 			my $file_name = _get_unicode( $ref, $next_len - 2 );
 			warn "\t\tfile name is $file_name\n" if $Debug;
-	
+
 			_skip( $ref, 4 );
 			$next_len     = _get_short_length( $ref );
 			my $volume    = _get_unicode( $ref, $next_len * 2 );
 			warn "\t\tvolume is $volume\n" if $Debug;
-	
+
 			_skip( $ref, 2 );
 			$next_len     = _get_short_length( $ref );
 			#$chars        = _get_short_length( $ref );
@@ -497,11 +497,11 @@ sub hohm
 		_skip( $ref, 3*4 );
 
 		my $next_len = _get_length( $ref );
-		
+
 		$hohm{ $hohm_types{$type} } = 'Smart Playlist ' . ( $type % 100 );
 		}
 	else
-		{		
+		{
 		_skip( $ref, 3*4 );
 
 		my $next_len = _get_length( $ref );
@@ -516,7 +516,7 @@ sub hohm
 		}
 
 	_leftovers( $ref, $length );
-	
+
 	return \%hohm;
 	}
 
@@ -533,7 +533,7 @@ sub hplm
 
 	my $marker = _get_marker( $ref );
 	my $length = _get_length( $ref );
-	
+
 	my $lists  = _get_count( $ref );
 	warn "\t\tlists is $lists\n" if $Debug;
 
@@ -571,10 +571,10 @@ sub hpim
 		{
 		my $result = $Dispatch{'hohm'}->( $ref );
 		my( $name )  = grep { m/playlist/ } keys %$result;
-		
+
 		if( $result->{type} >= 0x64 )
 			{
-			push @playlists, 
+			push @playlists,
 				[ Mac::iTunes::Playlist->new( $result->{$name} ) ];
 			}
 		}
@@ -589,7 +589,7 @@ sub hpim
 		push @{ $playlists[-1] }, $song;
 		}
 
-	return @playlists;	
+	return @playlists;
 	}
 
 =item
@@ -628,9 +628,9 @@ sub _peek
 	my $data = substr( $$ref, 0, 1 );
 
 	my $char = sprintf "%02x", ord( $data );
-	
+
 	warn "+++++peeking at $char\n" if $Debug;
-	
+
 	$char;
 	}
 
@@ -638,15 +638,15 @@ sub _eat
 	{
 	my $ref = shift;
 	my $l   = shift || 0;
-	
+
 	if( $l == 0 )
 		{
 		my @caller = caller(2);
-		
+
 		warn "Eating no bytes at $caller[3] line $caller[2]!\n"
 			if( $ENV{ITUNES_DEBUG} && $caller[3] !~ m/leftovers|skip/ );
 		}
-		
+
 	$Ate += $l;
 
 	my $data = substr( $$ref, 0, $l );
@@ -666,93 +666,93 @@ sub _get_marker    { _get_string( $_[0], 4 )            }
 sub _get_count     { _get_long_int( @_ )                }
 sub _get_date      { _get_long_int( @_ )                }
 
-sub _get_length    
-	{ 
+sub _get_length
+	{
 	my $l = _get_long_int( @_ );
-	
+
 	_next_length_debug( $l ) if $Debug;
-               
+
     return $l
 	}
 
-sub _get_short_length    
-	{ 
+sub _get_short_length
+	{
 	my $l = _get_short_int( @_ );
-	
+
 	_next_length_debug( $l ) if $Debug;
-               
+
     return $l
 	}
 
-sub _get_unicode   
-	{ 
-	my $s = _get_string( $_[0], $_[1] ); 
-	_strip_nulls( $s ); 
-	return $s; 
+sub _get_unicode
+	{
+	my $s = _get_string( $_[0], $_[1] );
+	_strip_nulls( $s );
+	return $s;
 	}
-	
-sub _leftovers     
+
+sub _leftovers
 	{
 	my( $ref, $length ) = @_;
-	
+
 	my $diff = $length - $Ate;
-	
-	_skip( $ref, $diff ); 
+
+	_skip( $ref, $diff );
 	}
 
 sub _skip
 	{
 	my( $ref, $length ) = @_;
-	
+
 	my @caller = caller(1);
-	
+
 	print STDERR ( "-" x 73, "\n" ) if $Debug;
 	my $package = __PACKAGE__;
 	$caller[3] =~ s/$package\:\://i;
 	warn "Skipping [$length] bytes in $caller[3] l.$caller[2]\n" if $Debug;
-	
+
 	if( $caller[3] eq '_leftovers' )
 		{
 		my @caller = caller(2);
 		$caller[3] =~ s/$package\:\://i;
 		warn "\tcalled from $caller[3] l.$caller[2]\n" if $Debug;
 		}
-		
+
 	my $data = _eat( $ref, $length );
-	
+
 	if( $Debug )
 		{
 		my $count = 0;
-	
+
 		foreach my $char ( split //, $$data )
 			{
 			print STDERR "\n*****" if $count % 20 == 0;
 			$count++;
 			printf STDERR "%02x ", ord($char);
 			}
-	
+
 		print STDERR "\n";
 		}
-		
+
 	print STDERR ( "-" x 73, "\n" ) if $Debug;
 
 	$data;
 	}
-	
+
 sub _strip_nulls
 	{
 	$_[0] =~ s/\000//g;
 	}
-	
+
 sub _next_length_debug
 	{
 	my $l = shift;
-	
+
 	my @caller = caller(1);
-	
+
 	my $package = __PACKAGE__;
 	$caller[3] =~ s/$package\:\://i;
-	
+
 	warn sprintf "  ---> next length is [%d|%04x] at $caller[3] line $caller[2]\n",
 		$l, $l;
 	}
@@ -764,11 +764,11 @@ sub _date_parse
 	my $integer = shift;
 
 	my $hex = sprintf "%x", $integer;
-	
+
 	return $integer if $integer < $Date_offset;
 
 	my $time = $integer - $Date_offset;
-	
+
 	warn "\ttime is [$time|$hex] [" . _sprint_date($time) . "]\n" if $Debug;
 	return $time;
 	}
@@ -776,7 +776,7 @@ sub _date_parse
 sub _sprint_date
 	{
 	my $time = shift;
-	
+
 	return scalar gmtime $time;
 	}
 
@@ -787,7 +787,7 @@ sub _sprint_date
 This source is part of a SourceForge project which always has the
 latest sources in CVS, as well as all of the previous releases.
 
-	https://sourceforge.net/projects/brian-d-foy/
+	http://sourceforge.net/projects/brian-d-foy/
 
 If, for some reason, I disappear from the world, one of the other
 members of the project can shepherd this module appropriately.
@@ -802,7 +802,7 @@ L<Mac::iTunes>, L<Mac::iTunes::Item>, L<Mac::iTunes::Playlist>
 
 =head1 AUTHOR
 
-brian d foy,  E<lt>bdfoy@cpan.orgE<gt>
+brian d foy,  C<< <bdfoy@cpan.org> >>
 
 =head1 COPYRIGHT
 
