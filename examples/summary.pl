@@ -1,9 +1,27 @@
 #!/usr/bin/perl -w
+# $Id$
 use strict;
+
+=head1 NAME
+
+example/summary.pl
+
+=head1 SYNOPSIS
+
+perl summary.pl /path/to/itunes/music/library
+
+perl summary.pl ../mp3/"iTunes Music Library"
+
+=head1 DESCRIPTION
+
+This script is a short example of the MacOSX::iTunes module.
+It pretty-prints a summary of your iTunes library.
+
+=cut
 
 use MacOSX::iTunes;
 
-my $file = 'mp3/iTunes Music Library';
+my $file = $ARGV[0];
 die "file [$file] does not exist\n" unless -e $file;
 
 my $itunes = MacOSX::iTunes->read( $file );
@@ -24,3 +42,15 @@ foreach my $title ( @playlists )
 		print "\t\t$title, $artist\n";
 		}
 	}
+
+=head1 SEE ALSO
+
+L<MacOSX::iTunes>
+
+=head1 AUTHOR
+
+Copyright 2002, brian d foy <bdfoy@cpan.org>
+
+You may redistribute this under the same terms as Perl.
+
+=cut
