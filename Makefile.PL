@@ -18,7 +18,7 @@ sub ExtUtils::MM_Any::test_via_harness
 	
 WriteMakefile(
     'NAME'		    => 'Mac::iTunes',
-	'VERSION'       => '0.7',
+	'VERSION_FROM'  => 'lib/iTunes.pm',
 	
     'PM'            => {
      	'lib/AppleScript.pm'  => '$(INST_LIBDIR)/iTunes/AppleScript.pm',
@@ -45,6 +45,6 @@ WriteMakefile(
 		'Time::HiRes'       => '0',
 		},
 		    	
-    clean  => { FILES      => q|"mp3/iTunes Music Library"| },
+    clean  => { FILES      => q|Mac-iTunes-* mp3/iTunes\\ Music\\ Library| },
     	
 	);
