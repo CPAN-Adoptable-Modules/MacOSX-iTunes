@@ -29,6 +29,10 @@ applescript/set_front_playlist.osa
 applescript/tracks_in_playlist.osa
 cgi/iTunes.cgi
 doc/file_format.pod
+examples/html_table.tmpl
+examples/publisher.pl
+examples/summary.pl
+examples/tabs.tmpl
 html/iTunes.html
 lib/AppleScript.pm
 lib/Item.pm
