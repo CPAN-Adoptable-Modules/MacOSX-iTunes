@@ -17,7 +17,7 @@ mp3/empty.d/empty6.mp3
 mp3/empty1.mp3
 mp3/empty2.mp3
 mp3/empty3.mp3
-mp3/"iTunes Music Library"
+mp3/iTunes_Music_Library
 t/00.load.t
 t/00.parse.t
 t/00.write.t
