@@ -76,7 +76,7 @@ sub get_playlist
 	
 	my $playlist = $self->{_playlists}{$name};
 	
-	return 1;
+	return $playlist;
 	}
 
 =item add_playlist( OBJECT )
