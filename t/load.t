@@ -1,9 +1,16 @@
 # $Id$
 
-use Test::More tests => 7;
+BEGIN {
+	use File::Find::Rule;
+	@classes = map { my $x = $_;
+		$x =~ s|^blib/lib/||;
+		$x =~ s|/|::|g;
+		$x =~ s|\.pm$||;
+		$x;
+		} File::Find::Rule->file()->name( '*.pm' )->in( 'blib/lib' );
+	}
 
-my @classes = ( "Mac::iTunes", map { "Mac::iTunes::$_" } qw( AppleScript FileFormat
-	Playlist Item Library::Parse Library::Write ) );
+use Test::More tests => scalar @classes;
 	
 foreach my $class ( @classes )
 	{
