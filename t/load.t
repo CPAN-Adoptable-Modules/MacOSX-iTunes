@@ -1,19 +1,36 @@
 # $Id$
 
-BEGIN {
-	use File::Find::Rule;
-	@classes = map { my $x = $_;
-		$x =~ s|^blib/lib/||;
-		$x =~ s|/|::|g;
-		$x =~ s|\.pm$||;
-		$x;
-		} File::Find::Rule->file()->name( '*.pm' )->in( 'blib/lib' );
-	}
+use File::Find;
+use Test::More;
 
-use Test::More tests => scalar @classes;
-	
+my @classes = my_find();
+
+plan tests => scalar @classes;
+
 foreach my $class ( @classes )
 	{
 	print "bail out! $class did not compile\n" unless use_ok( $class );
 	}
 
+sub my_find
+	{
+	my @files = ();
+	
+	find(
+		sub { 
+			return unless -f $_;
+			if( /\.pm/ )
+				{
+				my $file = $File::Find::name;
+				$file =~ s|blib/lib/||;
+				$file =~ s|/|::|g;
+				$file =~ s|\.pm$||;
+				
+				push @files, $file;
+				}
+			},
+		"blib"
+		);
+		
+	@files;
+	}

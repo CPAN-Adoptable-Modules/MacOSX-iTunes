@@ -287,7 +287,7 @@ sub _get_mac_path
 	return unless -e $path;
 
 	my $util = Mac::Path::Util->new( $path );
-	$util->use_applescript(1);
+	#$util->use_applescript(1); XXX: what is this?
 
 	my $mac_path = $util->mac_path;
 

@@ -1,9 +1,18 @@
 # $Id$
 
-use Test::More tests => 44;
+use Test::More;
 
 use Mac::iTunes;
-use Mac::iTunes::AppleScript qw(:boolean :state :size);
+eval "use Mac::iTunes::AppleScript qw(:boolean :state :size)";
+
+if( $@ )
+	{
+	plan skip_all => "Skipping tests for Mac::iTunes::Applescript"
+	}
+else
+	{
+	plan tests => 44;
+	}
 
 my $controller = Mac::iTunes->controller;
 isa_ok( $controller, 'Mac::iTunes::AppleScript' );

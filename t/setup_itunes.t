@@ -1,9 +1,22 @@
 # $Id$
 use strict;
 
-use Test::More tests => 3;
+BEGIN { $^W = 0 };
+
+use Test::More;
 
 use Mac::iTunes;
+
+eval "use Mac::iTunes::AppleScript";
+
+if( $@ )
+	{
+	plan skip_all => "Skipping tests: Need Mac::iTunes::Applescript"
+	}
+else
+	{
+	plan tests => 3;
+	}
 
 use lib  qw(./t/lib ./lib);
 
@@ -28,6 +41,6 @@ ok( $result, 'Playlist exists' );
 # the playlist.
 print "bail out! could not add track to iTunes!\n" unless
 	$controller->add_track( $iTunesTest::Test_mp3,
-	$iTunesTest::Test_playlist );
+		$iTunesTest::Test_playlist );
 
 

@@ -4,7 +4,6 @@ use Test::More tests => 2;
 
 use Mac::iTunes;
 use Mac::iTunes::Preferences;
-use Time::HiRes;
 
 my $file = "plists/com.apple.iTunes.plist";
 my $prefs;

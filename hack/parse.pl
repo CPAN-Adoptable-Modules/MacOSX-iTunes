@@ -95,12 +95,14 @@ sub htim
 
 BEGIN {
 %hohm_types = (
-	1 => 'goobledgook',
-	2 => 'song',
-	3 => 'album',
-	4 => 'artist',
-	5 => 'genre',
-	6 => 'file type',
+	  1 => 'goobledgook',
+	  2 => 'song',
+	  3 => 'album',
+	  4 => 'artist',
+	  5 => 'genre',
+	  6 => 'file type',
+	 11 => 'URL',
+	 12 => 'composer',
 	100 => 'playlist',
 	);
 }

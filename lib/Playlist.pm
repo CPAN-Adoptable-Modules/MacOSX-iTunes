@@ -164,7 +164,7 @@ sub previous_item
 
 Adds the Mac::iTunes::Item object to the playlist.
 
-Returns false or the empty list if the argument is not
+Returns undef or the empty list if the argument is not
 a Mac::iTunes::Item object.
 
 =cut

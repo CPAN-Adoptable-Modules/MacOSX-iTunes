@@ -21,14 +21,14 @@ my $fetched;
 ok( $fetched = $iTunes->get_playlist( $Title ),  'Fetch playlist'  );
 is( $fetched, $playlist,                         'Playlist test'   );
 
-ok( !$iTunes->get_playlist( "Doesn't Exist" ),  'Non-existent playlist' );
+is( $iTunes->get_playlist( "Doesn't Exist" ), undef, 'Non-existent playlist' );
 
-ok(  $iTunes->playlist_exists( $playlist ),     'Playlist exist before delete' );
-ok(  $iTunes->delete_playlist( $playlist ),     'Delete playlist' );
-ok( !$iTunes->playlist_exists( $playlist ),	'Playlist exists after delete' );
-is(  $iTunes->playlists, 0,                     'Playlist count after delete'  );
+ok( $iTunes->playlist_exists( $playlist ),      'Playlist exist before delete' );
+ok( $iTunes->delete_playlist( $playlist ),      'Delete playlist' );
+ok( $iTunes->playlist_exists( $playlist ) == 0, 'Playlist exists after delete' );
+is( $iTunes->playlists, 0,                      'Playlist count after delete'  );
 
-ok( !$iTunes->add_playlist( ),          'Check null playlist'   );
-ok( !$iTunes->add_playlist( undef ),    'Check undef playlist'  );
-ok( !$iTunes->add_playlist( 'Title' ),  'Check string playlist' );
-ok( !$iTunes->add_playlist( $iTunes ),  'Check object type'     );
+is( $iTunes->add_playlist( ),         undef,  'Check null playlist'   );
+is( $iTunes->add_playlist( undef ),   undef,  'Check undef playlist'  );
+is( $iTunes->add_playlist( 'Title' ), undef,  'Check string playlist' );
+is( $iTunes->add_playlist( $iTunes ), undef,  'Check object type'     );

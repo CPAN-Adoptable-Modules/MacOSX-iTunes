@@ -5,12 +5,13 @@ use strict;
 use base qw(Exporter);
 use vars qw($VERSION);
 
+use Carp qw(carp);
 use Mac::iTunes::Item;
 use Mac::iTunes::Playlist;
 
 require Exporter;
 
-$VERSION = '0.82';
+$VERSION = '0.83_01';
 
 =head1 NAME
 
@@ -20,6 +21,7 @@ Mac::iTunes - interact with and control iTunes
 
 use Mac::iTunes;
 
+# if you have Mac::iTunes::AppleScript
 my $controller = Mac::iTunes->controller();
 
 my $library = Mac::iTunes->new( $library_path );
@@ -55,7 +57,7 @@ sub new
 =item controller()
 
 Creates a new Mac::iTunes controller object.  See L<Mac::iTunes::Applescript>
-for methods.
+for methods.  This method is not available on non-Mac systems.
 
 =cut
 
@@ -65,13 +67,21 @@ sub controller
 
 	my $self = {};
 
-	require Mac::iTunes::AppleScript;
+	eval "use Mac::iTunes::AppleScript";
+	
+	if( $@ )
+		{
+		carp "You need Mac::iTunes::AppleScript to use an iTunes controller";
+		return;
+		}
 
 	return Mac::iTunes::AppleScript->new();
 	}
 
-=item preferences( [ FILENAME ]
+=item preferences( [ FILENAME ] )
 
+Read the iTunes preferences from the given FILENAME, or the file
+~/Library/Preferences/com.apple.iTunes.plist .
 
 =cut
 
@@ -79,8 +89,12 @@ sub preferences
 	{
 	my $class    = shift;
 	my $filename = shift;
+	
+	$filename = "$ENV{HOME}/Library/Preferences/com.apple.iTunes.plist"
+		unless defined $filename;
 
 	require Mac::iTunes::Preferences;
+	
 	Mac::iTunes::Preferences->parse_file( $filename );
 	}
 
@@ -105,7 +119,7 @@ sub playlists
 Takes a playlist title argument.
 
 Extracts a Mac::Playlist object from the music library.  Returns 
-false if the playlist does not exist.
+undef if the playlist does not exist.
 
 =cut
 
@@ -121,11 +135,13 @@ sub get_playlist
 	return $playlist;
 	}
 
-=item add_playlist( OBJECT )
+=item add_playlist( PLAYLIST_OBJECT )
 
-Takes a Mac::iTunes::Playlist objext as its only argument.
+Takes a Mac::iTunes::Playlist object as its only argument.
 
-Adds the playlist to the music library.
+Adds the playlist to the music library and returns a true
+value.  If it cannot add the playlist object, perhaps because
+it is not a playlist object, it returns undef.
 
 =cut
 
@@ -302,7 +318,7 @@ brian d foy,  E<lt>bdfoy@cpan.orgE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2003, brian d foy, All rights reserved
+Copyright 2004, brian d foy, All rights reserved
 
 You may redistribute this under the same terms as Perl.
 

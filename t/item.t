@@ -1,5 +1,7 @@
 # $Id$
 
+BEGIN { $^W = 0; }
+
 use Test::More tests => 7;
 
 use Mac::iTunes::Item;
@@ -20,6 +22,6 @@ is( $iTunesTest::Time,       $item->seconds, 'Item seconds' );
 is( $iTunesTest::Test_mp3,   $item->file,    'Item file' );
 
 # can we not create an item?
-ok( Mac::iTunes::Item->new_from_mp3( 'foo.mp' ) == 0, 
+is( Mac::iTunes::Item->new_from_mp3( 'foo.mp' ), undef,
 	'Do not make item from missing file' );
 

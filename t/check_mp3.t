@@ -5,6 +5,7 @@ use Test::More tests => 3;
 use MP3::Info;
 
 use lib  qw(./t/lib ./lib);
+$iTunesTest::Title = undef; # get around "only used once warning"
 
 require "test_data.pl";
 

@@ -26,7 +26,6 @@ file.
 
 =item as_xml
 
-
 =cut
 
 BEGIN {

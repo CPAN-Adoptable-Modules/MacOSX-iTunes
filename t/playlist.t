@@ -21,13 +21,13 @@ is( $playlist->title, $Title,                             'Title is correct'    
 ok( $playlist->add_item( $item ),                         'Added items'           );
 is( $playlist->items, 1,                                  'Count is right'        );
 
-ok( 0 == $playlist->add_item( 'This is 0 == an item' ),   'Try adding string'     );
+is( $playlist->add_item( 'This is 0 == an item' ), undef, 'Try adding string'     );
 is( $playlist->items, 1,                                  'Count is still right'  );
-ok( 0 == $playlist->add_item( ),                          'Try adding nothing'    );
+is( $playlist->add_item( ), undef,                        'Try adding nothing'    );
 is( $playlist->items, 1,                                  'Count is still right'  );
-ok( 0 == $playlist->add_item( undef ),                    'Try adding undef'      );
+is( $playlist->add_item( undef ), undef,                  'Try adding undef'      );
 is( $playlist->items, 1,                                  'Count is still right'  );
-ok( 0 == $playlist->add_item( {} ),                       'Try adding {}'         );
+is( $playlist->add_item( {} ), undef,                     'Try adding {}'         );
 is( $playlist->items, 1,                                  'Count is still right'  );
 
 isa_ok( $playlist = Mac::iTunes::Playlist->new( $Title, [ $item ] ), 
