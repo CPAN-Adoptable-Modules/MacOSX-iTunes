@@ -68,7 +68,6 @@ t/position.t
 t/preferences.t
 t/prereq.t
 t/setup_itunes.t
-t/test_manifest
 t/track_info.t
 t/write.t
 tk/tk-itunes.pl

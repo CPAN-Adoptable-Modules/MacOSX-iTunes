@@ -10,3 +10,4 @@ Makefile
 pm_to_blib
 blibdirs
 NO_MAC
+t/test_manifest
