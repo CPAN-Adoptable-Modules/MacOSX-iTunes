@@ -10,7 +10,7 @@ use Mac::iTunes::Playlist;
 
 require Exporter;
 
-$VERSION = '0.81';
+$VERSION = '0.82';
 
 =head1 NAME
 
@@ -232,6 +232,8 @@ sub read
 
 =item merge( FILENAME | OBJECT )
 
+UNIMPLEMENTED!
+
 Merges the current music library with the one in the named file
 or Mac::iTunes object.  Does not affect the object argument.
 
@@ -245,6 +247,8 @@ sub merge
 	}
 
 =item write
+
+UNIMPLEMENTED!  Just dumps it with Data::Dumper.
 
 Returns the music library as a string suitable for an iTunes
 Music Object file.
@@ -275,7 +279,8 @@ sub _not_implemented
 
 * everything - the list of things already done is much shorter.
 
-* speed everything up 100 times
+* speed everything up 100 times with Mac::Glue when it works on
+Mac OS X
 
 =head1 BUGS
 
@@ -297,7 +302,7 @@ brian d foy,  E<lt>bdfoy@cpan.orgE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2002, brian d foy, All rights reserved
+Copyright 2003, brian d foy, All rights reserved
 
 You may redistribute this under the same terms as Perl.
 
