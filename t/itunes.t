@@ -21,12 +21,12 @@ my $fetched;
 ok( $fetched = $iTunes->get_playlist( $Title ),  'Fetch playlist'  );
 is( $fetched, $playlist,                         'Playlist test'   );
 
-ok( $iTunes->get_playlist( "Doesn't Exist" ) == 0, 'Non-existent playlist' );
+ok( !$iTunes->get_playlist( "Doesn't Exist" ),  'Non-existent playlist' );
 
-ok( $iTunes->playlist_exists( $playlist ),      'Playlist exist before delete' );
-ok( $iTunes->delete_playlist( $playlist ),      'Delete playlist' );
-ok( $iTunes->playlist_exists( $playlist ) == 0, 'Playlist exists after delete' );
-is( $iTunes->playlists, 0,                      'Playlist count after delete'  );
+ok(  $iTunes->playlist_exists( $playlist ),     'Playlist exist before delete' );
+ok(  $iTunes->delete_playlist( $playlist ),     'Delete playlist' );
+ok( !$iTunes->playlist_exists( $playlist ),	'Playlist exists after delete' );
+is(  $iTunes->playlists, 0,                     'Playlist count after delete'  );
 
 ok( $iTunes->add_playlist( ) == 0,          'Check null playlist'   );
 ok( $iTunes->add_playlist( undef ) == 0,    'Check undef playlist'  );

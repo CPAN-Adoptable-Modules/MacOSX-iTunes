@@ -21,7 +21,7 @@ ok( $result, 'Playlist was deleted' );
 # now add the playlist.  it should now be the only playlist
 # with that name.
 $controller->add_playlist( $iTunesTest::Test_playlist );
-my $result = $controller->playlist_exists( $iTunesTest::Test_playlist );
+$result = $controller->playlist_exists( $iTunesTest::Test_playlist );
 ok( $result, 'Playlist exists' );
 
 # add a track to the playlist.  it will be the only track in

@@ -38,7 +38,7 @@ sub parse_file
 	my $class = shift;
 	my $filename = shift || _default_prefs;
 
-	open my $fh, $filename or return;
+	open( my $fh, $filename ) or return;
 	my $string = do { local $/; <$fh> };
 	close $fh;
 

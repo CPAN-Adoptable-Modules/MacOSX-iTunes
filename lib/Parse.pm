@@ -375,7 +375,9 @@ sub hohm
 		$hohm{volume} = $volume;
 		eat( $ref, 27 - $next_len ); # ???  why 27?
 
-		my( $some_date ) = unpack( 'I', ${eat( $ref, 4 )} );
+		# XXX This $some_date gets stomped by the next one, so I
+		# commented it out. -- Andy
+		#my( $some_date ) = unpack( 'I', ${eat( $ref, 4 )} );
 		my( $some_date ) = unpack( 'I', $data );
 
 		$some_date = _date_parse( $some_date );
