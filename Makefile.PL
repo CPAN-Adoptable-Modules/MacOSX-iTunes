@@ -33,14 +33,14 @@ WriteMakefile(
 
 	'PREREQ_PM' => {
 		'File::Find::Rule'  => '0',
-		'Mac::AppleScript'  => '0',
-		'Mac::Path::Util'   => '0',
+		'Mac::AppleScript'  => '0.03',
+		'Mac::Path::Util'   => '0.07',
 		'Mac::PropertyList' => '0',
 		'MP3::Info'         => '0',
 		'Test::Data'        => '0',
 		'Test::Manifest'    => '0.9',
 		'Test::More'        => '0',
-		'Test::Pod'         => '0',
+		'Test::Pod'         => '0.72',
 		'Test::Prereq'      => '0.18',
 		'Time::HiRes'       => '0',
 		},
