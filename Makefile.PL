@@ -40,8 +40,6 @@ WriteMakefile(
 		'Test::Data'        => '0',
 		'Test::Manifest'    => '0.9',
 		'Test::More'        => '0',
-		'Test::Pod'         => '0.72',
-		'Test::Prereq'      => '0.18',
 		'Time::HiRes'       => '0',
 		},
 		
