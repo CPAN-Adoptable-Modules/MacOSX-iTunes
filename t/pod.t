@@ -1,17 +1,4 @@
-# $Id$
-use strict;
-
-use vars qw(@files @scripts);
-
-BEGIN {
-	use File::Find::Rule;
-	@files = File::Find::Rule->file()->name( '*.pm' )->in( 'blib/lib' );
-	@scripts = qw(tk/tk-itunes.pl cgi/iTunes.cgi);
-	}
-
-use Test::Pod tests => scalar @files + scalar @scripts;
-
-foreach my $file ( @files, @scripts )
-	{
-	pod_ok($file);
-	}
+use Test::More;
+eval "use Test::Pod 1.00";
+plan skip_all => "Test::Pod 1.00 required for testing POD" if $@;
+all_pod_files_ok();
