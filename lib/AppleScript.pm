@@ -1,13 +1,16 @@
+# $Id$
 package Mac::iTunes::AppleScript;
 use strict;
 
 use base qw(Exporter);
-use vars qw($AUTOLOAD @EXPORT_OK %EXPORT_TAGS);
+use vars qw($AUTOLOAD @EXPORT_OK %EXPORT_TAGS $VERSION);
 
 use Carp qw(carp);
 use File::Spec;
 use Mac::AppleScript qw(RunAppleScript);
 use Mac::Path::Util;
+
+$VERSION = sprintf "%d.%02d", q$Revision$ =~ m/ (\d+) \. (\d+) /gx;
 
 my $Singleton = undef;
 @EXPORT_OK = qw(TRUE FALSE PLAYING STOPPED PAUSED SMALL MEDIUM LARGE);

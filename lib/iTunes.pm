@@ -26,9 +26,8 @@ Mac::iTunes -
 
 =item new()
 
-Creates a new Mac::iTunes object.  If you specify a filename argument
-the object uses that file as the iTunes Music Library to initialize
-the object, otherwise the object is empty (so you can build a new library).
+Creates a new, empty Mac::iTunes object.  If you want to read a 
+current library, use read().
 
 Returns false on failure.
 

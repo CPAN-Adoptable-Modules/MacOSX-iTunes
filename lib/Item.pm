@@ -1,6 +1,10 @@
 # $Id$
 package Mac::iTunes::Item;
 
+use vars qw($VERSION);
+
+$VERSION = sprintf "%d.%02d", q$Revision$ =~ m/ (\d+) \. (\d+) /gx;
+
 use MP3::Info qw(get_mp3tag);
 
 =head1 NAME
@@ -9,7 +13,22 @@ Mac::iTunes::Item
 
 =head1 SYNOPSIS
 
+use Mac::iTunes::Item;
+
+my $item = Mac::iTunes::Item->new( 
+	{
+	title    => $title,
+	genre    => $genre,
+	seconds  => $seconds,
+	file     => $path,
+	artist   => $artist,
+	url      => $url,
+	}
+	);
+	
 =head1 DESCRIPTION
+
+Create an iTunes item (aka track).
 
 =head1 METHODS
 

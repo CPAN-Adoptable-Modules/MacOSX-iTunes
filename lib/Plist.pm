@@ -1,5 +1,10 @@
+# $Id$
 package Mac::iTunes::Library::Plist;
 use strict;
+
+use vars qw($VERSION);
+
+$VERSION = sprintf "%d.%02d", q$Revision$ =~ m/ (\d+) \. (\d+) /gx;
 
 =head1 NAME
 
@@ -8,6 +13,8 @@ Mac::iTunes::Library::Plist - interact with the music library plist file
 =head1 SYNOPSIS
 
 =head1 DESCRIPTION
+
+Someday this will parse the iTunes XML format
 
 =head1 AUTHOR
 

@@ -1,5 +1,10 @@
+# $Id$
 package Mac::iTunes::Preferences;
 use strict;
+
+use vars qw($VERSION);
+
+$VERSION = sprintf "%d.%02d", q$Revision$ =~ m/ (\d+) \. (\d+) /gx;
 
 =head1 NAME
 

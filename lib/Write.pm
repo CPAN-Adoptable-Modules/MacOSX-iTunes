@@ -1,7 +1,11 @@
 # $Id$
 package Mac::iTunes::Library::Write;
+use strict;
 
 use base qw(Mac::iTunes);
+use vars qw($VERSION $XML_HEAD $XML_FOOT);
+
+$VERSION = sprintf "%d.%02d", q$Revision$ =~ m/ (\d+) \. (\d+) /gx;
 
 =head1 NAME
 
@@ -51,7 +55,7 @@ sub as_xml
 	{
 	my $self = shift;
 	
-	$str  = $XML_HEAD;
+	my $str  = $XML_HEAD;
 	
 	
 	$str .= $XML_FOOT;
