@@ -8,9 +8,5 @@ Mac-iTunes-*
 blib
 Makefile
 pm_to_blib
-<<<<<<< .cvsignore
-t/test_manifest
-=======
 blibdirs
->>>>>>> 1.7
 NO_MAC
