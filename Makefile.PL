@@ -33,6 +33,7 @@ check_mp3.t
 itunes.t
 item.t
 playlist.t
+endian.t
 parse.t
 parse3.t
 parse4.t

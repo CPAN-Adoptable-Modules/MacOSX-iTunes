@@ -60,6 +60,7 @@ t/item.t
 t/itunes.t
 t/lib/test_data.pl
 t/load.t
+t/endian.t
 t/parse.t
 t/parse3.t
 t/playlist.t
