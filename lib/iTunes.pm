@@ -1,8 +1,8 @@
 # $Id$
-package MacOSX::iTunes;
+package Mac::iTunes;
 
-use MacOSX::iTunes::Item;
-use MacOSX::iTunes::Playlist;
+use Mac::iTunes::Item;
+use Mac::iTunes::Playlist;
 
 require Exporter;
 use base qw(Exporter);
@@ -11,7 +11,7 @@ $VERSION = '0.01';
 
 =head1 NAME
 
-MacOSX::iTunes -
+Mac::iTunes -
 
 =head1 SYNOPSIS
 
@@ -23,7 +23,7 @@ MacOSX::iTunes -
 
 =item new()
 
-Creates a new MacOSX::iTunes object.  If you specify a filename argument
+Creates a new Mac::iTunes object.  If you specify a filename argument
 the object uses that file as the iTunes Music Library to initialize
 the object, otherwise the object is empty (so you can build a new library).
 
@@ -40,6 +40,26 @@ sub new
 		};
 		
 	bless $self, $class;
+	
+	return $self;
+	}
+
+=item controller()
+
+Creates a new Mac::iTunes controller object.  See L<Mac::iTunes::Applescript>
+for methods.
+
+=cut
+	
+sub controller
+	{
+	my $class = shift;
+	
+	my $self = {};
+	
+	require Mac::iTunes::AppleScript;
+	
+	bless $self, 'Mac::iTunes::AppleScript';
 	
 	return $self;
 	}
@@ -64,7 +84,7 @@ sub playlists
 
 Takes a playlist title argument.
 
-Extracts a MacOSX::Playlist object from the music library.  Returns 
+Extracts a Mac::Playlist object from the music library.  Returns 
 false if the playlist does not exist.
 
 =cut
@@ -83,7 +103,7 @@ sub get_playlist
 
 =item add_playlist( OBJECT )
 
-Takes a MacOSX::iTunes::Playlist objext as its only argument.
+Takes a Mac::iTunes::Playlist objext as its only argument.
 
 Adds the playlist to the music library.
 
@@ -97,7 +117,7 @@ sub add_playlist
 	return unless defined $playlist;
 	
 	return unless(
-		ref $playlist and $playlist->isa( 'MacOSX::iTunes::Playlist' ) );
+		ref $playlist and $playlist->isa( 'Mac::iTunes::Playlist' ) );
 	
 	my $title = $playlist->title;
 
@@ -110,7 +130,7 @@ sub add_playlist
 
 =item delete_playlist( PLAYLIST | OBJECT )
 
-Takes a playlist title or MacOSX::iTunes::Playlist object as 
+Takes a playlist title or Mac::iTunes::Playlist object as 
 an argument.  
 
 Removes the playlist from the music library.
@@ -126,7 +146,7 @@ sub delete_playlist
 	
 	if( ref $title )
 		{
-		return unless $title->isa( 'MacOSX::iTunes::Playlist' );
+		return unless $title->isa( 'Mac::iTunes::Playlist' );
 		
 		$title = $title->title;
 		}
@@ -136,7 +156,7 @@ sub delete_playlist
 
 =item playlist_exists( PLAYLIST | OBJECT )
 
-Takes a playlist title or MacOSX::iTunes::Playlist object as 
+Takes a playlist title or Mac::iTunes::Playlist object as 
 an argument.  
 
 Returns true if the playlist exists in the music library, and false
@@ -144,7 +164,7 @@ otherwise.
 
 The playlist exists if the music library has a playlist with
 the same title, or if the object matches another object in
-the music library.  See MacOSX::iTunes::Playlist to see how
+the music library.  See Mac::iTunes::Playlist to see how
 one playlist object may match another.
 
 NOTE:  at the moment, if you use an object argument, the 
@@ -161,7 +181,7 @@ sub playlist_exists
 			
 	if( ref $title )
 		{
-		return unless $title->isa('MacOSX::iTunes::Playlist');
+		return unless $title->isa('Mac::iTunes::Playlist');
 		
 		# XXX: this is a start - just grab the title
 		$title = $title->title;
@@ -185,15 +205,15 @@ sub read
 		
 	return unless open my( $fh ), $file;
 
-	require MacOSX::iTunes::Library::Parse;
+	require Mac::iTunes::Library::Parse;
 	
-	MacOSX::iTunes::Library::Parse->parse( $fh );
+	Mac::iTunes::Library::Parse->parse( $fh );
 	}
 	
 =item merge( FILENAME | OBJECT )
 
 Merges the current music library with the one in the named file
-or MacOSX::iTunes object.  Does not affect the object argument.
+or Mac::iTunes object.  Does not affect the object argument.
 
 =cut
 	

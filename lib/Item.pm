@@ -1,11 +1,11 @@
 # $Id$
-package MacOSX::iTunes::Item;
+package Mac::iTunes::Item;
 
 use MP3::Info qw(get_mp3tag);
 
 =head1 NAME
 
-MacOSX::iTunes::Item
+Mac::iTunes::Item
 
 =head1 SYNOPSIS
 
@@ -30,6 +30,7 @@ sub new
 		seconds  => $hash->{seconds},
 		file     => $hash->{path},
 		artist   => $hash->{artist},
+		url      => $hash->{url},
 		_hash    => $hash
 		};
 	
@@ -203,7 +204,7 @@ STRING
 
 =head1 SEE ALSO
 
-L<MacOSX::iTunes>, L<MacOSX::iTunes::Playlist>, L<MP3::Info>
+L<Mac::iTunes>, L<Mac::iTunes::Playlist>, L<MP3::Info>
 
 =head1 TO DO
 

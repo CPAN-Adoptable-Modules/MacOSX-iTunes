@@ -1,18 +1,18 @@
 # $Id$
-package MacOSX::iTunes::Library::Parse;
+package Mac::iTunes::Library::Parse;
 use strict;
 
-use vars qw($Debug $Ate %hohm_types);
+use vars qw($Debug $Ate %hohm_types $iTunes_version);
 
-use MacOSX::iTunes;
-use MacOSX::iTunes::Item;
-use MacOSX::iTunes::Playlist;
+use Mac::iTunes;
+use Mac::iTunes::Item;
+use Mac::iTunes::Playlist;
 
-$Debug = 0;
+$Debug = $ENV{ITUNES_DEBUG} || 0;
 $Ate   = 0;
 
 my %Dispatch = (
-	hdfm => \&hd,   # header record
+	hdfm => \&hdfm, # header record
 	hdsm => \&hd,   # header/footer start record
 	htlm => \&htlm, # playlist meta data
 	htim => \&htim, # a song record
@@ -21,6 +21,10 @@ my %Dispatch = (
 	hpim => \&hpim, # start of playlist
 	hptm => \&hptm, # song in playlist
 	);
+
+=over 4
+
+=cut
 	
 sub parse
 	{
@@ -29,9 +33,11 @@ sub parse
 		
 	my $data = do { local $/; <$fh> };
 	
+	print STDERR "Data length is ", length($data) . "\n" if $Debug;
+	
 	my %songs     = ();
 	
-	my $itunes = MacOSX::iTunes->new();
+	my $itunes = Mac::iTunes->new();
 	
 	while( $data )
 		{
@@ -66,6 +72,27 @@ sub parse
 	print STDERR Data::Dumper::Dumper( $itunes ), "\n" if $Debug;
 	
 	$itunes;	
+	}
+
+sub hdfm
+	{
+	my $ref = shift;
+	local $Ate = 0;
+	
+	eat( $ref, 4 );
+	
+	my( $length ) = unpack( "I", ${eat( $ref, 4 )} );
+
+	eat( $ref, 8 );
+
+	my ($next_len) = unpack( 'S', "\000" . ${eat( $ref, 1 )} );
+
+	my( $version ) = unpack( "A*", ${eat( $ref, $next_len )} );
+	$iTunes_version = $version;
+	
+	print STDERR "\tapplication version is $version\n" if $Debug;
+	
+	eat( $ref, $length - $Ate );
 	}
 	
 sub hd
@@ -129,21 +156,41 @@ sub htim
 	
 	my( $id )     = unpack( "I", ${eat( $ref, 4 )} );
 	my( $type )   = unpack( "I", ${eat( $ref, 4 )} );
-	eat( $ref, 4 * 3);
+	eat( $ref, 4 );
 
+	my( $file_type ) = unpack( "A*", ${eat( $ref, 4 )} );
+	eat( $ref, 4 );
+	
 	my( $bytes )  = unpack( "I", ${eat( $ref, 4 )} );
 	my( $time  )  = unpack( "I", ${eat( $ref, 4 )} );
 
 	my( $track )  = unpack( "I", ${eat( $ref, 4 )} );
 	my( $tracks ) = unpack( "I", ${eat( $ref, 4 )} );
+	eat( $ref, 6);
+	
+	my( $bit_rate )    = unpack( "S", ${eat( $ref, 2)} );
+	my( $sample_rate ) = unpack( "S", ${eat( $ref, 2)} );
+	
+	eat( $ref, 5*4 + 2 );
+	my( $creator ) = unpack( "A*", ${eat( $ref, 4 )} );
+	eat( $ref, 5*4 );
+
+	my( $rating ) = unpack( "S", "\000" . ${eat( $ref, 1)} );
 	
 	print  STDERR "\theader length is $header_length\n" if $Debug;
 	print  STDERR "\trecord length is $record_length\n" if $Debug;
 	print  STDERR "\thohms is $hohms\n" if $Debug;
 	printf STDERR "\tid is %x\n", $id if $Debug;
+	print  STDERR "\ttype is $type\n" if $Debug;
+	print  STDERR "\tfile type is $file_type\n" if $Debug;
+	print  STDERR "\tcreator is $creator\n" if $Debug;
 	print  STDERR "\tbytes is $bytes\n" if $Debug;
 	print  STDERR "\ttrack is $track of $tracks\n" if $Debug;
-		
+	print  STDERR "\tbit rate is $bit_rate\n" if $Debug;
+	print  STDERR "\tsample rate is $sample_rate\n" if $Debug;
+	printf STDERR "\trating is %x [%d] => %d stars\n", $rating, $rating, $rating / 20 if $Debug;
+
+	die;
 	eat( $ref, $header_length - $Ate );
 		
 	my %hash;
@@ -158,7 +205,7 @@ sub htim
 			}
 		}
 				
-	my $item = MacOSX::iTunes::Item->new(
+	my $item = Mac::iTunes::Item->new(
 		{
 		title     => $hash{title},
 		genre     => $hash{genre},
@@ -174,6 +221,7 @@ sub htim
 		path      => $hash{path},
 		track     => $track,
 		tracks    => $tracks,
+		url       => $hash{url},
 		}
 		);
 	
@@ -190,7 +238,11 @@ BEGIN {
 	4 => 'artist',
 	5 => 'genre',
 	6 => 'file type',
+	11 => 'url',               # version 3.0
 	100 => 'playlist',
+	101 => 'smart playlist 1', # version 3.0
+	102 => 'smart playlist 2', # version 3.0
+	
 	);
 }
 	
@@ -247,6 +299,8 @@ sub hohm
 		$hohm{volume} = $volume;
 		eat( $ref, 6*4 );
 		
+		eat( $ref, 2*4 ) if $iTunes_version =~ /^3/;
+		
 		($next_len) = unpack( 'S', "\000" . ${eat( $ref, 1 )} );
 		print STDERR "\tfilename length is $next_len\n" if $Debug;
 
@@ -263,7 +317,7 @@ sub hohm
 		print STDERR "\tcreator is [$creator]\n" if $Debug;
 		$hohm{creator} = $creator;
 
-		eat( $ref, 5 * 4);
+		eat( $ref, 5 * 4 );
 
 		($next_len) = unpack( 'I', ${eat( $ref, 4 )} );
 
@@ -274,11 +328,15 @@ sub hohm
 		while( 1 )
 			{
 			my( $next ) = unpack( 'A', ${eat( $ref, 1 )} );
-			next unless $next eq "\x5a";
+			printf STDERR "Next char is %x\n", ord($next) if $Debug;
+			next unless ( $next eq "\x5a" or $next eq "\xf7" );
 
 			$next  = unpack( 'C', ${eat( $ref, 1 )} );
-			$next .= unpack( 'C', ${eat( $ref, 1 )} );
+			printf STDERR "Next char is %x\n", $next if $Debug;
 
+			$next .= unpack( 'C', ${eat( $ref, 1 )} );
+			printf STDERR "Next char is %x\n", $next if $Debug;
+			
 			die unless $next eq '02';
 						
 			last;
@@ -345,8 +403,9 @@ sub hpim
 
 	print STDERR "\tlength is $length\n" if $Debug;
 
-	my( $foo ) = unpack( "I", ${eat( $ref, 4 )} );
-	my( $bar ) = unpack( "I", ${eat( $ref, 4 )} );
+	my( $foo )   = unpack( "I", ${eat( $ref, 4 )} );
+	my( $hohms ) = unpack( "I", ${eat( $ref, 4 )} );
+	print STDERR "\thohm blocks in playlist is $hohms\n" if $Debug;
 	
 	my( $songs ) = unpack( "I", ${eat( $ref, 4 )} );
 
@@ -354,10 +413,17 @@ sub hpim
 	
 	eat( $ref, $length - $Ate );
 	
-	my $result = $Dispatch{'hohm'}->( $ref );
-	
-	my $playlist = MacOSX::iTunes::Playlist->new( $result->{playlist} );
-	
+	my $playlist;
+	foreach my $index ( 1 .. $hohms )
+		{
+		my $result = $Dispatch{'hohm'}->( $ref );
+		
+		if( $result->{type} == 0x64 )
+			{
+			$playlist = Mac::iTunes::Playlist->new( $result->{playlist} );
+			}
+		}
+			
 	my @songs = ();
 	foreach my $index ( 1 .. $songs )
 		{
@@ -425,7 +491,7 @@ sub eat
 
 =head1 SEE ALSO
 
-L<MacOSX::iTunes>, L<MacOSX::iTunes::Item>
+L<Mac::iTunes>, L<Mac::iTunes::Item>
 
 =head1 TO DO
 

@@ -6,7 +6,8 @@ iTunes Music Library File Format
 
 =head1 SYNOPSIS
 
-This file describes the C<iTunes Music Library> file format
+This file describes the C<iTunes Music Library> file format for 
+application versions 1.1.2 and 3.0.
 
 =head1 DESCRIPTION
 
@@ -23,6 +24,8 @@ of the item identifiers from the middle of the file.
 Each block of data begins with a four letter marker which denotes
 the type of block.  Some blocks contain sub-blocks, which means
 you cannot simply read to the next marker.
+
+The blocks show up roughly in this order:
 
 =over 4
 
@@ -56,8 +59,8 @@ you cannot simply read to the next marker.
       4       4     L = header length
       8       4     file length ?
      12       4     ?
-     13       1     N = length of version string ?
-     14       N     version string ?
+     13       1     N = length of version string
+     14       N     application version string
      14+N   L-N-17  ?
 
 =item hdsm
@@ -79,15 +82,6 @@ you cannot simply read to the next marker.
       8       4     number of songs
      12      L-12   ?
 
-=item hplm
-
-    Byte   Length  Comment
-    -----------------------
-      0       4     'htlm'
-      4       4     L = header length
-      8       4     number of playlists
-     12      L-12   ?
-
 =item htim
 
     Byte   Length  Comment
@@ -102,27 +96,50 @@ you cannot simply read to the next marker.
      28       4     Mac OS file type (e.g. MPG3)
      32       4     ?
      36       4     file size, in bytes
-     40       4     playtime?
+     40       4     playtime, millisecs
      44       4     track number
      48       4     total number of tracks
-     52      L-52   ?
+     52       6     ?
+     58       2     bit rate
+     60       2     sample rate
+     62      L-62   ?
      56      R-L    hohm sub blocks
      
 =item hohm
+
+The hohm block has a header, annotated immediately below, and a 
+data-specific block.
 
     Byte   Length  Comment
     -----------------------
       0       4     'htim'
       4       4     L = header length
       8       4     R = total record length
-     12       4     block type, (1, 2, 3, 4, 5, 6, 0x64)
+     12       4     block type, (1, 2, 3, 4, 5, 6, 0x0b, 0x64)
      16      12     ?
      28     R-28    block specific data
      
+
 =over 4
 
-The following structure follows the common structure of the 
+=item hohm block types
+
+The data-specific structure follows the header structure of the 
 hohm block.  Offsets start at 0', which is byte 28 in the record.
+Sometimes these data appear to have null bytes alternate with
+information bytes, as in the Perl string "\000H\000e\000l\000l\000e".
+In that case, the null bytes count in the length of the data.
+
+    Type  Decimal   Description
+    --------------------------------------
+     1              big bag of gook     
+     2              song title
+     3              album title
+     4              artist name
+     5              genre string (not number)
+     6              file type (e.g. MPEG)
+     b      11      URL
+    64     100      playlist name (used in hpim)
 
 =item hohm type 1
 
@@ -133,6 +150,8 @@ hohm block.  Offsets start at 0', which is byte 28 in the record.
       4       n     ?
       4+n     1     N = volume name length (e.g. hard drive name)
       5+n     N     volume name
+              6     ??
+              2     ?? (iTunes 3)
       5+n+N   1     M = filename length
       6+n+N   M     filename
       
@@ -143,13 +162,23 @@ hohm block.  Offsets start at 0', which is byte 28 in the record.
       14+A   20     ?
       24+A    4     B = directory name length
       28+A    B     directory name
-      28+A+B  C?    ? gook up to the sequence 0x5a_00_02_00 ?
+      28+A+B  C?    ? gook up to the sequence 0x5a_00_02_00 ? (iTunes 1)
+                    ? gook up to the sequence 0x7f_00_02_00 ? (iTunes 3)
       
       (let A' = A+B+C )
      
       28+A'   2     D = length of fully qualified path
       30+A'   D    path
-      
+ 
+ =item hohm type 11 (0x0b)
+
+    Byte   Length  Comment
+    -----------------------
+      0'     12      ?
+     12       4      N = length of data
+     16       8      ?
+     24       N      URL
+     
 =item hohm type 100 (0x64)
 
     Byte   Length  Comment
@@ -185,6 +214,14 @@ hohm block.  Offsets start at 0', which is byte 28 in the record.
 
 =item hptm
 
+    Byte   Length  Comment
+    -----------------------
+      0       4      hpim
+      4       4      N = length of data
+      8      16      ?
+     24       4      song key (from htim)
+     28     N - 28   ?
+
 =back
 
 =cut
@@ -193,7 +230,7 @@ hohm block.  Offsets start at 0', which is byte 28 in the record.
 
 =head1 TO DO
 
-* everything - the list of things already done is much shorter.
+* verify that this works on all available versions
 
 =head1 BUGS
 

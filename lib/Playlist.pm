@@ -1,9 +1,9 @@
 # $Id$
-package MacOSX::iTunes::Playlist;
+package Mac::iTunes::Playlist;
 
 =head1 NAME
 
-MacOSX::iTunes::Playlist
+Mac::iTunes::Playlist
 
 =head1 SYNOPSIS
 
@@ -84,7 +84,7 @@ sub new_from_directory
 	my @items = ();
 	foreach my $file ( @$array )
 		{
-		my $item = MacOSX::iTunes::Item->new( $file );
+		my $item = Mac::iTunes::Item->new( $file );
 		
 		push @items, $item;
 		}
@@ -152,10 +152,10 @@ sub previous_item
 	
 =item add_item( OBJECT )
 
-Adds the MacOSX::iTunes::Item object to the playlist.
+Adds the Mac::iTunes::Item object to the playlist.
 
 Returns false or the empty list if the argument is not
-a MacOSX::iTunes::Item object.
+a Mac::iTunes::Item object.
 
 =cut
 
@@ -164,7 +164,7 @@ sub add_item
 	my $self = shift;
 	my $item = shift;
 	
-	return unless UNIVERSAL::isa( $item, 'MacOSX::iTunes::Item' );
+	return unless UNIVERSAL::isa( $item, 'Mac::iTunes::Item' );
 	
 	push @{ $self->{_items} }, $item;
 	}
@@ -292,7 +292,7 @@ sub _not_implemented
 
 =head1 SEE ALSO
 
-L<MacOSX::iTunes>, L<MacOSX::iTunes::Item>
+L<Mac::iTunes>, L<Mac::iTunes::Item>
 
 =head1 TO DO
 
