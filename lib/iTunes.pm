@@ -1,13 +1,16 @@
 # $Id$
 package Mac::iTunes;
+use strict;
+
+use base qw(Exporter);
+use vars qw($VERSION);
 
 use Mac::iTunes::Item;
 use Mac::iTunes::Playlist;
 
 require Exporter;
-use base qw(Exporter);
 
-$VERSION = '0.01';
+$VERSION = '0.7';
 
 =head1 NAME
 
@@ -260,8 +263,6 @@ sub _not_implemented
 
 	Carp::croak( "$function is unimplemented" );
 	}
-	
-"See why 1984 won't be like 1984";
 
 =back
 
@@ -273,8 +274,14 @@ sub _not_implemented
 
 =head1 AUTHOR
 
-Copyright 2002, brian d foy <bdfoy@cpan.org>
+brian d foy,  E<lt>bdfoy@cpan.orgE<gt>
+
+=head1 COPYRIGHT
+
+Copyright 2002, brian d foy, All rights reserved
 
 You may redistribute this under the same terms as Perl.
 
 =cut
+	
+"See why 1984 won't be like 1984";
