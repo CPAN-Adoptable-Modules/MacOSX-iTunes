@@ -38,6 +38,32 @@ variable ITUNES_DEBUG is a true value.
 
 =cut
 
+=head1 NAME
+
+Mac::iTunes::Library::Parse - parse the iTunes binary database file
+
+=head1 SYNOPSIS
+
+This class is usually used by Mac::iTunes.
+
+	use Mac::iTunes;
+	my $library = Mac::iTunes->new( $library_path );
+	
+If you want to fool with the data structure, you can use the parse
+functions.
+
+	use Mac::iTunes::Library::Parse;
+	my $library = Mac::iTunes::Library::Parse::parse( FILENAME );
+	
+=head1 DESCRIPTION
+
+Most functions output debugging information if the environment
+variable ITUNES_DEBUG is a true value.
+
+=head2 Functions
+
+=cut
+
 $Debug = $ENV{ITUNES_DEBUG} || 0;
 $Ate   = 0;
 
@@ -404,9 +430,41 @@ sub hohm
 
 		_skip( $ref, 5 * 4 );
 
-		$next_len        = _get_long_int( $ref );
-		warn "\t\tnext length is $next_len\n" if $Debug;
+		$next_len        = _get_length( $ref );
 		$hohm{directory} = _get_unicode( $ref, $next_len ); # 0 bytes?
+		warn "\t\tdirectory is $hohm{directory}\n" if $Debug;
+		
+		if( $iTunes_version =~ /^(?:4)/ )
+			{
+			_skip( $ref, 7 ); # ???
+			
+			my $some_date = _date_parse( _get_date( $ref ) );
+			
+			_skip( $ref, 48 );
+			
+			$next_len    = _get_short_length( $ref );
+			my $mac_path = _get_string( $ref, $next_len );
+			warn "\t\tmac path is $mac_path\n" if $Debug;
+	
+			while( _peek( $ref ) ne '0e' ) { _skip( $ref, 1 ) };
+			_skip( $ref, 1 );
+			
+			$next_len     = _get_short_length( $ref );
+			my $chars     = _get_short_length( $ref );
+			my $file_name = _get_unicode( $ref, $next_len - 2 );
+			warn "\t\tfile name is $file_name\n" if $Debug;
+	
+			_skip( $ref, 4 );
+			$next_len     = _get_short_length( $ref );
+			my $volume    = _get_unicode( $ref, $next_len * 2 );
+			warn "\t\tvolume is $volume\n" if $Debug;
+	
+			_skip( $ref, 2 );
+			$next_len     = _get_short_length( $ref );
+			#$chars        = _get_short_length( $ref );
+			my $unix_path = _get_unicode( $ref, $next_len );
+			warn "\t\tunix_path is $unix_path\n" if $Debug;
+			}
 		}
 	elsif( $type == 102 or $type == 101 )
 		{
@@ -543,7 +601,11 @@ sub _peek
 
 	my $data = substr( $$ref, 0, 1 );
 
-	sprintf "%x", unpack( "v", "\000" . $data );
+	my $char = sprintf "%02x", ord( $data );
+	
+	warn "+++++peeking at $char\n" if $Debug;
+	
+	$char;
 	}
 
 sub _eat
@@ -587,6 +649,15 @@ sub _get_length
     return $l
 	}
 
+sub _get_short_length    
+	{ 
+	my $l = _get_short_int( @_ );
+	
+	_next_length_debug( $l ) if $Debug;
+               
+    return $l
+	}
+
 sub _get_unicode   
 	{ 
 	my $s = _get_string( $_[0], $_[1] ); 
@@ -598,9 +669,39 @@ sub _skip
 	{
 	my( $ref, $length ) = @_;
 	
-	warn "Skipping [$length] bytes\n" if $Debug;
+	my @caller = caller(1);
 	
-	_eat( $ref, $length ); 
+	print STDERR ( "-" x 73, "\n" ) if $Debug;
+	my $package = __PACKAGE__;
+	$caller[3] =~ s/$package\:\://i;
+	warn "Skipping [$length] bytes in $caller[3] l.$caller[2]\n" if $Debug;
+	
+	if( $caller[3] eq '_leftovers' )
+		{
+		my @caller = caller(2);
+		$caller[3] =~ s/$package\:\://i;
+		warn "\tcalled from $caller[3] l.$caller[2]\n" if $Debug;
+		}
+		
+	my $data = _eat( $ref, $length );
+	
+	if( $Debug )
+		{
+		my $count = 0;
+	
+		foreach my $char ( split //, $$data )
+			{
+			print STDERR "\n*****" if $count % 20 == 0;
+			$count++;
+			printf STDERR "%02x ", ord($char);
+			}
+	
+		print STDERR "\n";
+		}
+		
+	print STDERR ( "-" x 73, "\n" ) if $Debug;
+
+	$data;
 	}
 	
 sub _leftovers     
@@ -623,7 +724,11 @@ sub _next_length_debug
 	
 	my @caller = caller(1);
 	
-	warn "  ---> next length is $l at $caller[3] line $caller[2]\n";
+	my $package = __PACKAGE__;
+	$caller[3] =~ s/$package\:\://i;
+	
+	warn sprintf "  ---> next length is [%d|%04x] at $caller[3] line $caller[2]\n",
+		$l, $l;
 	}
 
 my $Date_offset = 2082808800;
