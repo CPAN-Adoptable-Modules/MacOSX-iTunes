@@ -1,2 +1,5 @@
 .DS_Store
 *.tar.gz
+Mac-iTunes-*
+mp3/iTunes*
+mp3/itunes3.dump.txt
