@@ -26,7 +26,8 @@ ok( $result, 'Playlist exists' );
 
 # add a track to the playlist.  it will be the only track in
 # the playlist.
-$controller->add_track( $iTunesTest::Test_mp3,
+print "bail out! could not add track to iTunes!\n" unless
+	$controller->add_track( $iTunesTest::Test_mp3,
 	$iTunesTest::Test_playlist );
 
 
