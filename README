@@ -1,5 +1,9 @@
 $Id$
 
+This module has not been updated in a while, and iTunes
+has changed significantly.  I consider this module currently
+broken.
+
 You can install this using in the usual Perl fashion
 
 	perl Makefile.PL
@@ -15,7 +19,7 @@ the file, you can read it with perldoc.
 If you want to read it before you install it, you can use
 perldoc directly on the module file.
 
-	perldoc lib/iTunes.pm
+	perldoc  lib/iTunes.pm
 	
 This module is also in CVS on SourceForge
 

@@ -2,6 +2,8 @@ Changes
 MANIFEST			This list of files
 MANIFEST.SKIP
 Makefile.PL
+META.yml
+README
 applescript/add_a_track.osa
 applescript/add_playlist.osa
 applescript/add_track.osa
