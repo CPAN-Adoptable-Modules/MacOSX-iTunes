@@ -6,14 +6,19 @@ open OUT, "> mp3/iTunes Music Library";
 
 print OUT do { local $/; <IN> };
 
-my $tests = do {
-	local @ARGV = qw(t/test_manifest);
-	my $data = join " ", map {chomp; "t/$_" } <>;
-	};
+sub ExtUtils::MM_Any::test_via_harness
+	{
+    my($self, $perl, $tests) = @_;
+
+    return qq|\t$perl "-MTest::Manifest" | .
+           qq|"-e" "run_t_manifest(\$(TEST_VERBOSE), '\$(INST_LIB)', | .
+           qq|'\$(INST_ARCHLIB)')"\n|;
+	}
+
 	
 WriteMakefile(
     'NAME'		    => 'Mac::iTunes',
-	'VERSION'       => '0.6_05',
+	'VERSION'       => '0.7',
 	
     'PM'            => {
      	'lib/AppleScript.pm'  => '$(INST_LIBDIR)/iTunes/AppleScript.pm',
@@ -27,20 +32,19 @@ WriteMakefile(
     	},
 
 	'PREREQ_PM' => {
-		MP3::Info         => 0,
-		Mac::Path::Util   => 0,
-		File::Find::Rule  => 0,
-		Mac::AppleScript  => 0,
-		Mac::PropertyList => 0,
-		Test::More        => 0,
-		Test::Pod         => 0,
-		Test::Prereq      => '0.05',
-		Time::HiRes       => 0,
-		Test::Data        => 0,
+		'File::Find::Rule'  => '0',
+		'Mac::AppleScript'  => '0',
+		'Mac::Path::Util'   => '0',
+		'Mac::PropertyList' => '0',
+		'MP3::Info'         => '0',
+		'Test::Data'        => '0',
+		'Test::Manifest'    => '0',
+		'Test::More'        => '0',
+		'Test::Pod'         => '0',
+		'Test::Prereq'      => '0.05',
+		'Time::HiRes'       => '0',
 		},
 		    	
-    test   => { TESTS      => $tests },
-    depend => { 'Makefile' => 't/test_manifest' },
     clean  => { FILES      => q|"mp3/iTunes Music Library"| },
     	
 	);
