@@ -27,11 +27,16 @@ WriteMakefile(
     	},
 
 	'PREREQ_PM' => {
+		MP3::Info         => 0,
+		Mac::Path::Util   => 0,
 		File::Find::Rule  => 0,
 		Mac::AppleScript  => 0,
 		Mac::PropertyList => 0,
 		Test::More        => 0,
 		Test::Pod         => 0,
+		Test::Prereq      => '0.05',
+		Time::HiRes       => 0,
+		Test::Data        => 0,
 		},
 		    	
     test   => { TESTS      => $tests },
