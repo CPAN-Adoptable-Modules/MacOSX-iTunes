@@ -38,13 +38,25 @@ WriteMakefile(
 		'Mac::PropertyList' => '0',
 		'MP3::Info'         => '0',
 		'Test::Data'        => '0',
-		'Test::Manifest'    => '0',
+		'Test::Manifest'    => '0.9',
 		'Test::More'        => '0',
 		'Test::Pod'         => '0',
-		'Test::Prereq'      => '0.05',
+		'Test::Prereq'      => '0.18',
 		'Time::HiRes'       => '0',
 		},
-		    	
+		
+	'MAN3PODS' =>
+		{
+		'lib/AppleScript.pm'  => '$(INST_MAN3DIR)/Mac::iTunes::AppleScript.3',
+		'lib/Item.pm'         => '$(INST_MAN3DIR)/Mac::iTunes::Item.3',
+		'lib/iTunes.pm'       => '$(INST_MAN3DIR)/Mac::iTunes.3',
+		'lib/Parse.pm'        => '$(INST_MAN3DIR)/Mac::iTunes::Parse.3',
+		'lib/Playlist.pm'     => '$(INST_MAN3DIR)/Mac::iTunes::Playlist.3',
+		'lib/Preferences.pm'  => '$(INST_MAN3DIR)/Mac::iTunes::Preferences.3',
+		'lib/Write.pm'        => '$(INST_MAN3DIR)/Mac::iTunes::Write.3',
+    	'doc/file_format.pod' => '$(INST_MAN3DIR)/Mac::iTunes::FileFormat.3',
+		},
+	    	
     clean  => { FILES      => q|Mac-iTunes-* mp3/iTunes\\ Music\\ Library| },
     	
 	);
