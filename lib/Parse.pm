@@ -64,6 +64,32 @@ variable ITUNES_DEBUG is a true value.
 
 =cut
 
+=head1 NAME
+
+Mac::iTunes::Library::Parse - parse the iTunes binary database file
+
+=head1 SYNOPSIS
+
+This class is usually used by Mac::iTunes.
+
+	use Mac::iTunes;
+	my $library = Mac::iTunes->new( $library_path );
+	
+If you want to fool with the data structure, you can use the parse
+functions.
+
+	use Mac::iTunes::Library::Parse;
+	my $library = Mac::iTunes::Library::Parse::parse( FILENAME );
+	
+=head1 DESCRIPTION
+
+Most functions output debugging information if the environment
+variable ITUNES_DEBUG is a true value.
+
+=head2 Functions
+
+=cut
+
 $Debug = $ENV{ITUNES_DEBUG} || 0;
 $Ate   = 0;
 
@@ -432,9 +458,10 @@ sub hohm
 
 		$next_len        = _get_length( $ref );
 		$hohm{directory} = _get_unicode( $ref, $next_len ); # 0 bytes?
+<<<<<<< Parse.pm
 		warn "\t\tdirectory is $hohm{directory}\n" if $Debug;
 		
-		if( $iTunes_version =~ /^(?:4)/ )
+		if( $iTunes_version =~ /^(?:3|4)/ )
 			{
 			_skip( $ref, 7 ); # ???
 			
@@ -664,6 +691,15 @@ sub _get_unicode
 	_strip_nulls( $s ); 
 	return $s; 
 	}
+	
+sub _leftovers     
+	{
+	my( $ref, $length ) = @_;
+	
+	my $diff = $length - $Ate;
+	
+	_skip( $ref, $diff ); 
+	}
 
 sub _skip
 	{
@@ -702,15 +738,6 @@ sub _skip
 	print STDERR ( "-" x 73, "\n" ) if $Debug;
 
 	$data;
-	}
-	
-sub _leftovers     
-	{
-	my( $ref, $length ) = @_;
-	
-	my $diff = $length - $Ate;
-	
-	_skip( $ref, $diff ); 
 	}
 	
 sub _strip_nulls
