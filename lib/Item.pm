@@ -51,6 +51,44 @@ sub new
 	return $self;
 	}
 
+# make a fake object, for testing.
+sub _new
+	{
+	my $class = shift;
+	my $num   = shift;
+	
+	bless \$num, $class;
+	}
+	
+=item copy
+
+Return a deep copy of the item.  The returned object will not
+refer (as in, point to the same data) as the original object.
+
+=cut
+
+sub copy
+	{
+	my $self = shift;
+	
+	my $ref = {};
+	
+	foreach my $key ( qw(title genre seconds file artist) )
+		{
+		$ref->{$key} = $self->{$key};
+		}
+
+	foreach my $key ( qw(_tag _info) )
+		{
+		foreach my $subkey ( keys %{ $self->{$key} } )
+			{
+			$ref->{$key}{$subkey} = $self->{$key}{$subkey};
+			}
+		}
+		
+	return $ref;
+	}
+	
 =item title
 
 Return the title of the item
