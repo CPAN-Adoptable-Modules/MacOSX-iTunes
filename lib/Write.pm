@@ -14,7 +14,7 @@ Mac::iTunes::Library::Write - create an iTunes Music Library file
 =head1 SYNOPSIS
 
 	see the Mac::iTunes documentation
-	
+
 =head1 DESCRIPTION
 
 This module turns a Mac::iTunes object into an C<iTunes Music Library>
@@ -54,20 +54,20 @@ XML
 sub as_xml
 	{
 	my $self = shift;
-	
+
 	my $str  = $XML_HEAD;
-	
-	
+
+
 	$str .= $XML_FOOT;
-	
+
 	return $str;
 	}
-	
+
 sub item_xml
 	{
 	my $self = shift;
 	my $item = shift;
-	
+
 	my $str =<<"XML";
 		<key>67</key>
 		<dict>
@@ -114,7 +114,7 @@ XML
 
 	return $str;
 	}
-	
+
 =cut
 
 =back
@@ -125,7 +125,7 @@ This source is part of a SourceForge project which always has the
 latest sources in CVS, as well as all of the previous releases.
 
 	https://sourceforge.net/projects/brian-d-foy/
-	
+
 If, for some reason, I disappear from the world, one of the other
 members of the project can shepherd this module appropriately.
 

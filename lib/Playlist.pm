@@ -12,9 +12,14 @@ Mac::iTunes::Playlist
 
 =head1 SYNOPSIS
 
+	use Mac::iTunes::Playlist;
+
+	my $playlist = Mac::iTunes::Playlist->new( @items );
+
+
 =head1 DESCRIPTION
 
-=head1 METHODS
+=head2 METHODS
 
 =over 4 
 
@@ -27,17 +32,17 @@ sub new
 	my $class = shift;
 	my $title = shift;
 	my $items = shift || [] ; # should be a reference
-	
+
 	return unless defined $title;
 	return if ref $title;
 	return unless UNIVERSAL::isa( $items, 'ARRAY' );
-		
+
 	my $self = { title  => $title,
 	             _items => $items,
 	           };
-	
+
 	bless $self, $class;
-	
+
 	return $self;
 	}
 
@@ -53,7 +58,7 @@ my @mp3_find_temp;
 sub _mp3_find
 	{
 	require File::Spec;
-	
+
 	if( /.mp3$/ )
 		{
 		push @mp3_find_temp, File::Spec->catfile( $File::Find::dir, $_ );
@@ -66,15 +71,15 @@ sub _mp3_find
 sub _find
 	{
 	my $directory = shift;
-	
+
 	return unless -d $directory;
 
 	require File::Find;
-	
+
 	@mp3_find_temp = ();
 
 	File::Find::find( \&_mp3_find, $directory );
-	
+
 	\@mp3_find_temp;
 	}
 
@@ -83,20 +88,20 @@ sub new_from_directory
 	my $class     = shift;
 	my $title     = shift;
 	my $directory = shift;
-	
+
 	my $array = _find( $directory );
-	
+
 	my @items = ();
 	foreach my $file ( @$array )
 		{
 		my $item = Mac::iTunes::Item->new( { file => $file } );
-		
+
 		push @items, $item;
 		}
-	
+
 	$class->new( $title, \@items );
 	}
-	
+
 =item title
 
 Returns the title of the playlist.
@@ -106,9 +111,9 @@ Returns the title of the playlist.
 sub title( [TITLE] )
 	{
 	my $self = shift;
-	
+
 	if( @_ ) { $self->{title} = shift }
-	
+
 	return $self->{title};
 	}
 
@@ -123,9 +128,9 @@ In scalar context, returns the number of items in the playlist.
 sub items
 	{
 	my $self = shift;
-	
+
 	my @items = @{ $self->{_items} };
-	
+
 	return wantarray ? @items : scalar @items;
 	}
 
@@ -138,10 +143,10 @@ Not implemented
 sub next_item
 	{
 	my $self = shift;
-	
+
 	$self->_not_implemented;
 	}
-	
+
 =item previous_item
 
 Not implemented
@@ -151,10 +156,10 @@ Not implemented
 sub previous_item
 	{
 	my $self = shift;
-	
+
 	$self->_not_implemented;
 	}
-	
+
 =item add_item( OBJECT )
 
 Adds the Mac::iTunes::Item object to the playlist.
@@ -168,12 +173,12 @@ sub add_item
 	{
 	my $self = shift;
 	my $item = shift;
-	
+
 	return unless UNIVERSAL::isa( $item, 'Mac::iTunes::Item' );
-	
+
 	push @{ $self->{_items} }, $item;
 	}
-	
+
 =item delete_item( INDEX )
 
 Deletes the item at index INDEX (counting from zero).
@@ -189,12 +194,12 @@ sub delete_item
 	my $index = shift;
 
 	my $count = $self->items;
-	
+
 	return unless $index > $count;
-	
+
 	splice @{ $self->{_items} }, $index, 1;
 	}
-	
+
 =item merge( PLAYLIST )
 
 Adds the items in PLAYLIST to the current playlist and returns
@@ -214,20 +219,20 @@ sub merge
 	{
 	my $self     = shift;
 	my $playlist = shift;
-	
+
 	return unless UNIVERSAL::isa( $playlist, __PACKAGE__ );
-	
+
 	my $count = 0;
-	
+
 	foreach my $item ( $playlist->items )
 		{
 		my $copy = $item->copy;
 		$count++ if $self->add_item( $item );
 		}
-		
+
 	return $count;
 	}
-	
+
 =item random_item
 
 In scalar context, returns a random item from the playlist.
@@ -242,14 +247,14 @@ Returns false or the empty list if the playlist has no items.
 sub random_item
 	{
 	my $self = shift;
-	
+
 	my $count = $self->items;
-	
+
 	return unless $count;
-	
+
 	my $index = int( rand( $count ) );
 	my $item  = ${ $self->{_items} }[ $index ];
-	
+
 	return wantarray ? ( $item, $index, $count ) : $item;
 	}
 
@@ -263,9 +268,9 @@ refer (as in, point to the same data) as the original object.
 sub copy
 	{
 	my $self = shift;
-	
+
 	my $ref = {};
-	
+
 	foreach my $key ( qw(title) )
 		{
 		$ref->{$key} = $self->{$key};
@@ -276,9 +281,9 @@ sub copy
 		{
 		push @items, $item->copy;
 		}
-	
+
 	$ref->{_items} = \@items;
-	
+
 	return $ref;
 	}
 
@@ -305,19 +310,19 @@ sub publish
 	my $self     = shift;
 	my $fields   = shift || $Default_fields;
 	my $order    = shift || $Default_order;
-	
+
 	unless( UNIVERSAL::isa( $fields, 'ARRAY' ) )
 		{
 		carp();
 		}
-	
+
 	unless( UNIVERSAL::isa( $order, 'ARRAY' ) )
 		{
 		carp();
 		}
-	
+
 	}
-	
+
 =back
 
 =cut
@@ -325,12 +330,12 @@ sub publish
 sub _not_implemented
 	{
 	require Carp;
-	
+
 	my $function = (caller(1))[3];
 
 	Carp::croak( "$function is unimplemented" );
 	}
-		
+
 "See why 1984 won't be like 1984";
 
 =head1 SOURCE AVAILABILITY
@@ -339,7 +344,7 @@ This source is part of a SourceForge project which always has the
 latest sources in CVS, as well as all of the previous releases.
 
 	https://sourceforge.net/projects/brian-d-foy/
-	
+
 If, for some reason, I disappear from the world, one of the other
 members of the project can shepherd this module appropriately.
 
@@ -350,8 +355,6 @@ L<Mac::iTunes>, L<Mac::iTunes::Item>
 =head1 TO DO
 
 * everything - the list of things already done is much shorter.
-
-=head1 BUGS
 
 =head1 AUTHOR
 

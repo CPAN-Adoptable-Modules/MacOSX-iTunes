@@ -25,7 +25,7 @@ Mac::iTunes::Item
 		url      => $url,
 		}
 		);
-	
+
 =head1 DESCRIPTION
 
 Create an iTunes item (aka track).
@@ -42,16 +42,16 @@ sub new
 	{
 	my $class = shift;
 	my $hash  = shift;
-	
+
 	return unless UNIVERSAL::isa( $hash, 'HASH' );
-	
+
 	my $self = $hash;
-	
+
 	bless $self, $class;
-	
+
 	return $self;
 	}
-	
+
 =item new_from_mp3( FILE )
 
 Creates a new item from the given file name.
@@ -62,17 +62,17 @@ sub new_from_mp3
 	{
 	my $class = shift;
 	my $file  = shift;
-	
+
 	return unless -e $file;
-	
+
 	my $tag  = MP3::Info::get_mp3tag( $file );
 	my $info = MP3::Info::get_mp3info( $file );
 	# XXX: convert to an absolute path, if necessary
-	
+
 	# XXX: return unless it's an MP3 file
-	
+
 	# XXX: extract info from MP3 file
-	
+
 	my $self = {
 		title    => $tag->{TITLE},
 		genre    => $tag->{GENRE},
@@ -82,9 +82,9 @@ sub new_from_mp3
 		_tag     => $tag,
 		_info    => $info,
 		};
-	
+
 	bless $self, $class;
-	
+
 	return $self;
 	}
 
@@ -93,10 +93,10 @@ sub _new
 	{
 	my $class = shift;
 	my $num   = shift;
-	
+
 	bless \$num, $class;
 	}
-	
+
 =item copy
 
 Return a deep copy of the item.  The returned object will not
@@ -107,9 +107,9 @@ refer (as in, point to the same data) as the original object.
 sub copy
 	{
 	my $self = shift;
-	
+
 	my $ref = {};
-	
+
 	foreach my $key ( qw(title genre seconds file artist) )
 		{
 		$ref->{$key} = $self->{$key};
@@ -122,10 +122,10 @@ sub copy
 			$ref->{$key}{$subkey} = $self->{$key}{$subkey};
 			}
 		}
-		
+
 	return $ref;
 	}
-	
+
 =item title
 
 Return the title of the item
@@ -135,7 +135,7 @@ Return the title of the item
 sub title
 	{
 	my $self = shift;
-	
+
 	$self->{title};
 	}
 
@@ -148,10 +148,10 @@ Return the length, in seconds, of the item
 sub seconds
 	{
 	my $self = shift;
-	
+
 	$self->{seconds};
 	}
-	
+
 =item genre
 
 Return the genre of the song
@@ -161,10 +161,10 @@ Return the genre of the song
 sub genre
 	{
 	my $self = shift;
-	
+
 	$self->{genre};
 	}
-	
+
 =item file
 
 Return the filename of the item
@@ -174,10 +174,10 @@ Return the filename of the item
 sub file
 	{
 	my $self = shift;
-	
+
 	$self->{file};
 	}
-	
+
 =item artist
 
 Return the artist of the item
@@ -187,7 +187,7 @@ Return the artist of the item
 sub artist
 	{
 	my $self = shift;
-	
+
 	$self->{artist};
 	}
 
@@ -200,7 +200,7 @@ Return a string representation of the item
 sub as_string
 	{
 	my $self = shift;
-	
+
 	return <<"STRING";
 FILE    $$self{file}
 TITLE   $$self{title}
@@ -221,7 +221,7 @@ This source is part of a SourceForge project which always has the
 latest sources in CVS, as well as all of the previous releases.
 
 	https://sourceforge.net/projects/brian-d-foy/
-	
+
 If, for some reason, I disappear from the world, one of the other
 members of the project can shepherd this module appropriately.
 
@@ -232,8 +232,6 @@ L<Mac::iTunes>, L<Mac::iTunes::Playlist>, L<MP3::Info>
 =head1 TO DO
 
 * everything - the list of things already done is much shorter.
-
-=head1 BUGS
 
 =head1 AUTHOR
 

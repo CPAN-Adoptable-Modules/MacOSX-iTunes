@@ -10,7 +10,7 @@ use Mac::iTunes::Playlist;
 
 require Exporter;
 
-$VERSION = '0.80';
+$VERSION = '0.81';
 
 =head1 NAME
 
@@ -26,7 +26,7 @@ my $library = Mac::iTunes->new( $library_path );
 
 =head1 DESCRIPTION
 
-=head1 METHODS
+=head2 METHODS
 
 =over 4 
 
@@ -38,17 +38,17 @@ current library, use read().
 Returns false on failure.
 
 =cut
-	
+
 sub new
 	{
 	my $class = shift;
-	
+
 	my $self = {
 		_playlists => {},
 		};
-		
+
 	bless $self, $class;
-	
+
 	return $self;
 	}
 
@@ -58,15 +58,15 @@ Creates a new Mac::iTunes controller object.  See L<Mac::iTunes::Applescript>
 for methods.
 
 =cut
-	
+
 sub controller
 	{
 	my $class = shift;
-	
+
 	my $self = {};
-	
+
 	require Mac::iTunes::AppleScript;
-	
+
 	return Mac::iTunes::AppleScript->new();
 	}
 
@@ -79,27 +79,27 @@ sub preferences
 	{
 	my $class    = shift;
 	my $filename = shift;
-	
+
 	require Mac::iTunes::Preferences;
 	Mac::iTunes::Preferences->parse_file( $filename );
 	}
-		
+
 =item playlists
 
 In list context, returns a list of the titles of the playlists.
 In scalar context, returns the number of playlists.
 
 =cut
-	
+
 sub playlists
 	{
 	my $self = shift;
-	
+
 	my @playlists = keys %{ $self->{_playlists} };
-	
+
 	return wantarray ? @playlists : scalar @playlists;
 	}
-	
+
 =item get_playlist( PLAYLIST )
 
 Takes a playlist title argument.
@@ -108,16 +108,16 @@ Extracts a Mac::Playlist object from the music library.  Returns
 false if the playlist does not exist.
 
 =cut
-	
+
 sub get_playlist
 	{
 	my $self = shift;
 	my $name = shift;
-	
+
 	return unless $self->playlist_exists($name);
-	
+
 	my $playlist = $self->{_playlists}{$name};
-	
+
 	return $playlist;
 	}
 
@@ -128,23 +128,23 @@ Takes a Mac::iTunes::Playlist objext as its only argument.
 Adds the playlist to the music library.
 
 =cut
-	
+
 sub add_playlist
 	{
 	my $self     = shift;
 	my $playlist = shift;
 
 	return unless defined $playlist;
-	
+
 	return unless(
 		ref $playlist and $playlist->isa( 'Mac::iTunes::Playlist' ) );
-	
+
 	my $title = $playlist->title;
 
 	return if $self->playlist_exists( $title );
-	
+
 	$self->{_playlists}{$title} = $playlist;
-	
+
 	return 1;
 	}
 
@@ -156,21 +156,21 @@ an argument.
 Removes the playlist from the music library.
 
 =cut
-	
+
 sub delete_playlist
 	{
 	my $self  = shift;
 	my $title = shift;
-	
+
 	return unless $self->playlist_exists( $title );
-	
+
 	if( ref $title )
 		{
 		return unless $title->isa( 'Mac::iTunes::Playlist' );
-		
+
 		$title = $title->title;
 		}
-		
+
 	delete ${ $self->{_playlists} }{$title};
 	}
 
@@ -193,20 +193,20 @@ title is in the library.  this is just a placeholder until i
 come up with something better.
 
 =cut
-	
+
 sub playlist_exists
 	{
 	my $self  = shift;
 	my $title = shift;
-			
+
 	if( ref $title )
 		{
 		return unless $title->isa('Mac::iTunes::Playlist');
-		
+
 		# XXX: this is a start - just grab the title
 		$title = $title->title;
 		}
-	
+
 	return exists ${ $self->{_playlists} }{ $title };	
 	}
 
@@ -217,53 +217,53 @@ music library object, replacing any other data already in the
 object.
 
 =cut
-	
+
 sub read
 	{
 	my $self = shift;
 	my $file = shift;
-		
+
 	return unless open my( $fh ), $file;
 
 	require Mac::iTunes::Library::Parse;
-	
+
 	Mac::iTunes::Library::Parse->parse( $fh );
 	}
-	
+
 =item merge( FILENAME | OBJECT )
 
 Merges the current music library with the one in the named file
 or Mac::iTunes object.  Does not affect the object argument.
 
 =cut
-	
+
 sub merge
 	{
 	my $self = shift;
-	
+
 	$self->_not_implemented;
 	}
-	
+
 =item write
 
 Returns the music library as a string suitable for an iTunes
 Music Object file.
 
 =cut
-	
+
 sub write
 	{
 	my $self = shift;
 
 	require Data::Dumper;
-	
+
 	Data::Dumper::Dumper( $self );
 	}
-	
+
 sub _not_implemented
 	{
 	require Carp;
-	
+
 	my $function = (caller(1))[3];
 
 	Carp::croak( "$function is unimplemented" );
@@ -287,7 +287,7 @@ This source is part of a SourceForge project which always has the
 latest sources in CVS, as well as all of the previous releases.
 
 	https://sourceforge.net/projects/brian-d-foy/
-	
+
 If, for some reason, I disappear from the world, one of the other
 members of the project can shepherd this module appropriately.
 
@@ -302,5 +302,5 @@ Copyright 2002, brian d foy, All rights reserved
 You may redistribute this under the same terms as Perl.
 
 =cut
-	
+
 "See why 1984 won't be like 1984";

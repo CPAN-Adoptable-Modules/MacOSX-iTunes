@@ -14,6 +14,8 @@ iTunes.cgi - control iTunes from the web
 
 =head1 SYNOPSIS
 
+run as a CGI script
+
 =head1 DESCRIPTION
 
 This is only a proof-of-concept script.
@@ -44,9 +46,9 @@ elsif( $set_playlist )
 	$controller->_set_playlist( $set_playlist );
 	$playlist = $set_playlist;
 	}
-	
+
 my %var;
-	
+
 $var{base}      = 'http://10.0.1.2:8080/cgi-bin/iTunes.cgi';
 $var{state}     = $controller->player_state;
 $var{current}   = $controller->current_track_name;

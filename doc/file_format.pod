@@ -121,7 +121,7 @@ The blocks show up roughly in this order:
     120       4     add date
     124      32     ?
     156      R-L    hohm sub blocks
-     
+
 =item hohm
 
 The hohm block has a header, annotated immediately below, and a 
@@ -135,7 +135,7 @@ data-specific block.
      12       4     block type, (1, 2, 3, 4, 5, 6, 0x0b, 0x64)
      16      12     ?
      28     R-28    block specific data
-     
+
 
 =over 4
 
@@ -175,9 +175,9 @@ In that case, the null bytes count in the length of the data.
               2     ?? (iTunes 3)
       5+n+N   1     M = filename length
       6+n+N   M     filename
-      
+
       (let A = n+N+M )
-      
+
        6+A    4     Mac OS file type
       10+A    4     Mac OS creator
       14+A   20     ?
@@ -185,12 +185,12 @@ In that case, the null bytes count in the length of the data.
       28+A    B     directory name
       28+A+B  C?    ? gook up to the sequence 0x5a_00_02_00 ? (iTunes 1)
                     ? gook up to the sequence 0x7f_00_02_00 ? (iTunes 3)
-      
+
       (let A' = A+B+C )
-     
+
       28+A'   2     D = length of fully qualified path
       30+A'   D    path
- 
+
  =item hohm type 11 (0x0b)
 
     Byte   Length  Comment
@@ -199,7 +199,7 @@ In that case, the null bytes count in the length of the data.
      12       4      N = length of data
      16       8      ?
      24       N      URL
-     
+
 =item hohm type 100 (0x64)
 
     Byte   Length  Comment
@@ -208,20 +208,20 @@ In that case, the null bytes count in the length of the data.
      12       4      N = length of playlist name
      16       8      ?
      24       N      playlist name
-     
+
 =item other hohm types 
-    
+
     Byte   Length  Comment
     -----------------------
       0'     12      ?
      12       4      N = length of data
      16       8      ?
      24       N      data
-   
-      
-     
+
+
+
 =back
-     
+
 =item hpim
 
     Byte   Length  Comment
@@ -231,7 +231,7 @@ In that case, the null bytes count in the length of the data.
       8       4      ?
      12       4      ?
      16       4      number of items (hptm) in playlist
-   
+
 
 =item hptm
 

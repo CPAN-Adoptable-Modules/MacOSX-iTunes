@@ -282,35 +282,35 @@ sub _get_mac_path
 	{
 	my $self = shift;
 	my $file = shift;
-	
+
 	my $path = File::Spec->rel2abs( $file );
 	return unless -e $path;
-	
+
 	my $util = Mac::Path::Util->new( $path );
 	$util->use_applescript(1);
-	
+
 	my $mac_path = $util->mac_path;
-	
+
 	return $mac_path;
 	}
-	
+
 sub add_track($$$)
 	{
 	my $self     = shift;
 	my $file     = shift;
 	my $playlist = shift;
-	
+
 	my $mac_path = $self->_get_mac_path( $file );
 	return unless defined $mac_path;
-	
+
 	my $exists = $self->playlist_exists( $playlist );
 	#print STDERR "Playlist exists is [$exists]";
-	
+
 	$self->add_playlist( $playlist ) unless $exists;
 
 	$mac_path = $self->_escape_quotes( $mac_path );
 	$playlist = $self->_escape_quotes( $playlist );
-	
+
 	my $script =<<"SCRIPT";
 	set myName to alias "$mac_path"
 	add myName to playlist "$playlist"
@@ -334,7 +334,7 @@ sub track_file_exists
 	{
 	my $self     = shift;
 	my $file     = shift;
-	
+
 	my $mac_path = $self->_get_mac_path( $file );
 	return unless defined $mac_path;	
 	}
@@ -348,9 +348,9 @@ sub get_track_at_position($$;$)
 	my $self     = shift;
 	my $position = shift;
 	my $playlist = shift || $self->{_playlist};
-	
+
 	$playlist = $self->_escape_quotes( $playlist );
-	
+
 	my $script =<<"SCRIPT";
 	return name of track $position of playlist "$playlist"
 SCRIPT
@@ -367,16 +367,16 @@ sub play_track($$;$)
 	my $self     = shift;
 	my $position = shift;
 	my $playlist = shift || $self->{_playlist};
-	
+
 	$playlist = $self->_escape_quotes( $playlist );
-	
+
 	my $script =<<"SCRIPT";
 	play track $position of playlist "$playlist"
 SCRIPT
 
 	my $name = $self->tell( $script );
 	}
-	
+
 =item get_track_names_in_playlist( [ PLAYLIST ] )
 
 Return an anonymous array of the names of the tracks in
@@ -407,12 +407,12 @@ SCRIPT
 	my $result = $self->tell( $script );
 
 	my @list = split /\015/, $result; 
-	
+
 	#local $" = " <-> ";
 	#print STDERR "Found " . @list . " items [@list]\n";
 	return \@list;
 	}
-		
+
 =back
 
 =head2 Methods for playlists
@@ -428,7 +428,7 @@ Return an anonymous array of the names of the playlists.
 sub get_playlists
 	{
 	my $self = shift;
-	
+
 	my $script =<<'SCRIPT';
 	set myString to ""
 	set myList to playlists
@@ -441,13 +441,13 @@ SCRIPT
 
 	my $result = $self->tell( $script );
 #	print STDERR "Result is $result\n";
-	
+
 	my @list = split /\015/, $result; 
 #	local $" = " <-> ";
 #	print STDERR "Found " . @list . " items [@list]\n";
 	return \@list;
 	}
-	
+
 =item set_playlist( NAME )
 
 Set the current controller playlist.
@@ -461,12 +461,12 @@ sub set_playlist($$)
 	{
 	my $self = shift;
 	my $name = shift;
-	
+
 	return unless $self->playlist_exists( $name );
-	
+
 	$self->{_playlist} = $name;
 	}
-	
+
 =item add_playlist( NAME )
 
 Add a playlist with the name NAME.  Any double-quotes
@@ -531,7 +531,7 @@ sub playlist_exists
 	my $name = shift;
 
 	$name = $self->_escape_quotes( $name );
-	
+
 	my $script =<<"SCRIPT";
 	set myCount to 0
 	repeat with i from 1 to (the count of the playlists)
@@ -570,33 +570,33 @@ sub browser_window_visible
 	{
 	my $self   = shift;
 	my $state  = shift;
-	
+
 	$self->_window_visible( 'browser window 1', $state );
 	}
-	
+
 sub eq_window_visible
 	{
 	my $self   = shift;
 	my $state  = shift;
-	
+
 	$self->_window_visible( 'EQ window 1', $state );
 	}
-	
+
 sub _window_visible
 	{
 	my $self   = shift;
 	my $window = shift;
 	my $state  = shift;
-	
+
 	if( defined $state )
 		{
 		$state = $state ? TRUE : FALSE;
 		$self->tell( "set visible of $window to $state" );
 		}
-		
+
 	$self->tell( "return visible of $window" );
 	}
-	
+
 =back
 
 =head2 General AppleScript methods
@@ -620,7 +620,7 @@ sub tell
 	my $script = qq(tell application "iTunes"\n$command\nend tell);
 	print STDERR "\n", "-" x 50, "\n", $script, "\n", "-" x 50, "\n"
 		if $ENV{ITUNES_TELL};
-		
+
 	my $result = RunAppleScript( $script );
 
 	if( $@ )
@@ -686,7 +686,7 @@ sub _escape_quotes
 
 	$string;
 	}
-	
+
 sub DESTROY { 1 };
 
 =item state
@@ -710,11 +710,9 @@ This source is part of a SourceForge project which always has the
 latest sources in CVS, as well as all of the previous releases.
 
 	https://sourceforge.net/projects/brian-d-foy/
-	
+
 If, for some reason, I disappear from the world, one of the other
 members of the project can shepherd this module appropriately.
-
-=head1 SEE ALSO
 
 =head1 AUTHOR
 
