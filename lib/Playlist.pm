@@ -98,9 +98,11 @@ Returns the title of the playlist.
 
 =cut
 
-sub title
+sub title( [TITLE] )
 	{
 	my $self = shift;
+	
+	if( @_ ) { $self->{title} = shift }
 	
 	return $self->{title};
 	}
