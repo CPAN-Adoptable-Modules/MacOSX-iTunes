@@ -26,17 +26,7 @@ my %Dispatch = (
 	hptm => \&hptm, # song in playlist
 	);
 
-my $Date_offset = 2082808800;
-
-sub _date_parse
-	{
-	my $integer = shift;
-
-	return $integer if $integer < $Date_offset;
-
-	return $integer - $Date_offset;
-	}
-
+	
 =over 4
 
 =item parse
@@ -52,17 +42,20 @@ sub parse
 
 	my $data = do { local $/; <$fh> };
 
-	print STDERR "Data length is ", length($data) . "\n" if $Debug;
+	warn "Data length is ", length($data) . "\n" if $Debug;
 
 	my %songs     = ();
 
 	my $itunes = Mac::iTunes->new();
 
+	require Data::Dumper;
+	$Data::Dumper::Indent = 1;
+	
 	while( $data )
 		{
 		$data =~ m/^(....)/;
 
-		print STDERR "Marker is $1\n" if $Debug;
+		warn "Marker is $1\n" if $Debug;
 
 		my $marker = $1;
 
@@ -74,21 +67,24 @@ sub parse
 			}
 		elsif( $marker eq 'hpim' )
 			{
-			my $playlist = shift @result;
-
-			$itunes->add_playlist( $playlist );
-
-			foreach my $song ( @result )
+			warn "There are " . @result . " items in result\n" if $Debug;
+			warn Data::Dumper::Dumper( @result ), "\n" if $Debug;
+			
+			while( my $set = shift @result )
 				{
-				warn "Could not add item! [$song]" 
-					unless $playlist->add_item( $songs{$song} );
+				my $playlist = shift @$set;
+				$itunes->add_playlist( $playlist );
+				
+				foreach my $song ( @$set )
+					{
+					warn "Could not add item! [$song]" 
+						unless $playlist->add_item( $songs{$song} );
+					}
 				}
 			}
 		}
 
-	require Data::Dumper;
-	$Data::Dumper::Indent = 1;
-	print STDERR Data::Dumper::Dumper( $itunes ), "\n" if $Debug;
+	warn Data::Dumper::Dumper( $itunes ), "\n" if $Debug;
 
 	$itunes;	
 	}
@@ -98,20 +94,17 @@ sub hdfm
 	my $ref = shift;
 	local $Ate = 0;
 
-	eat( $ref, 4 );
-
-	my( $length ) = unpack( "I", ${eat( $ref, 4 )} );
+	my $marker = _get_marker( $ref );
+	my $length = _get_length( $ref );
 
 	eat( $ref, 8 );
 
-	my ($next_len) = unpack( 'S', "\000" . ${eat( $ref, 1 )} );
+	my $next_len    = _get_char_int( $ref );
+	$iTunes_version = _get_string( $ref, $next_len );
 
-	my( $version ) = unpack( "A*", ${eat( $ref, $next_len )} );
-	$iTunes_version = $version;
+	warn "\tapplication version is $iTunes_version\n" if $Debug;
 
-	print STDERR "\tapplication version is $version\n" if $Debug;
-
-	eat( $ref, $length - $Ate );
+	_leftovers( $ref, $length );
 	}
 
 sub hd
@@ -119,13 +112,12 @@ sub hd
 	my $ref = shift;
 	local $Ate = 0;
 
-	eat( $ref, 4 );
+	my $marker = _get_marker( $ref );
+	my $length = _get_length( $ref );
 
-	my( $length ) = unpack( "I", ${eat( $ref, 4 )} );
+	_next_length_debug( $length ) if $Debug;
 
-	print STDERR "\thd length is $length\n" if $Debug;
-
-	eat( $ref, $length - $Ate );
+	_leftovers( $ref, $length );
 	}
 
 =item htlm( DATA )
@@ -140,16 +132,15 @@ sub htlm
 	my $ref   = shift;
 	local $Ate = 0;
 
-	eat( $ref, 4 );
+	my $marker = _get_marker( $ref );
+	my $length = _get_length( $ref );
 
-	my( $length ) = unpack( "I", ${eat( $ref, 4 )} );
+	my( $songs ) = _get_count( $ref );
 
-	my( $songs ) = unpack( "I", ${eat( $ref, 4 )} );
+	_next_length_debug( $length ) if $Debug;
+	warn "\tsong count is $songs\n" if $Debug;
 
-	print STDERR "\thtml length is $length\n" if $Debug;
-	print STDERR "\tsong count is $songs\n" if $Debug;
-
-	eat( $ref, $length - $Ate );	
+	_leftovers( $ref, $length );	
 
 	return $songs;
 	}
@@ -162,94 +153,84 @@ The htim record starts the Item object
 
 sub htim
 	{
-	my $ref   = shift;
-
+	my $ref    = shift;
 	local $Ate = 0;
 
-	eat( $ref, 4 );
+	my $marker         = _get_marker( $ref );
+	my $header_length  = _get_length( $ref );
+	my $record_length  = _get_length( $ref );
 
-	my( $header_length ) = unpack( "I", ${eat( $ref, 4 )} );
-	my( $record_length ) = unpack( "I", ${eat( $ref, 4 )} );
+	my $hohms          = _get_count( $ref );
+	warn "\thohms is $hohms\n" if $Debug;
 
-	my( $hohms )  = unpack( "I", ${eat( $ref, 4 )} );
+	my $id             = _get_long_int( $ref );
+	my $type           = _get_long_int( $ref );
+	warn sprintf "\tid is %x\n\ttype is %s\n", $id, $type if $Debug;
+	
+	_get_long_int( $ref );
+	
+	my $file_type      = _get_string( $ref, 4 );
+	my $date_modified  = _date_parse( _get_date( $ref ) );
+	my $bytes          = _get_long_int( $ref );
+	my $time           = _get_long_int( $ref );
+	my $track          = _get_long_int( $ref );
+	my $tracks         = _get_long_int( $ref );
 
-	my( $id )            = unpack( "I", ${eat( $ref, 4 )} );
-	my( $type )          = unpack( "I", ${eat( $ref, 4 )} );
-	eat( $ref, 4 );
+	_get_short_int( $ref );
+	
+	my $year           = _get_short_int( $ref );
 
-	my( $file_type ) = unpack( "A*", ${eat( $ref, 4 )} );
-	my( $date_modified ) = _date_parse(
-		unpack( "I", ${eat( $ref, 4 )} ) 
-		);
+	_get_short_int( $ref );
 
-	my( $bytes )  = unpack( "I", ${eat( $ref, 4 )} );
-	my( $time  )  = unpack( "I", ${eat( $ref, 4 )} );
+	my $bit_rate       = _get_short_int( $ref );
+	my $sample_rate    = _get_short_int( $ref );
 
-	my( $track )  = unpack( "I", ${eat( $ref, 4 )} );
-	my( $tracks ) = unpack( "I", ${eat( $ref, 4 )} );
+	_get_short_int( $ref );
 
-	eat( $ref, 2);
+	my $volume         = _get_long_int( $ref );
+	my $start          = _get_long_int( $ref );
+	my $end            = _get_long_int( $ref );
+	my $play_count     = _get_long_int( $ref );
 
-	my( $year )   = unpack( "S", ${eat( $ref, 2)} );
+	_get_short_int( $ref );
 
-	eat( $ref, 2);
-
-	my( $bit_rate )    = unpack( "S", ${eat( $ref, 2)} );
-	my( $sample_rate ) = unpack( "S", ${eat( $ref, 2)} );
-
-	eat( $ref, 2);
-
-	my( $volume )      = unpack( "I", ${eat( $ref, 4 )} );
-	my( $start )       = unpack( "I", ${eat( $ref, 4 )} );
-	my( $end )         = unpack( "I", ${eat( $ref, 4 )} );
-	my( $play_count )  = unpack( "I", ${eat( $ref, 4 )} );
-
-	eat( $ref, 2);
-
-	my( $compilation ) = unpack( "S", ${eat( $ref, 2)} );
+	my $compilation    = _get_short_int( $ref );
 
 	eat( $ref, 3*4 );
 
-	my( $play_count2 )  = unpack( "I", ${eat( $ref, 4 )} );
+	my $play_count2     = _get_count( $ref );
 
-	my( $play_date ) = _date_parse( unpack( "I", ${eat( $ref, 4 )} )  );
-	my( $disk )      = unpack( "S", ${eat( $ref, 2)} );
-	my( $disks )     = unpack( "S", ${eat( $ref, 2)} );
+	my $play_date       = _date_parse( _get_date( $ref )  );
+	my $disk            = _get_short_int( $ref );
+	my $disks           = _get_short_int( $ref );
 
-	my( $rating ) = unpack( "S", "\000" . ${eat( $ref, 1)} );
+	my $rating          = _get_char_int( $ref );
+
 	eat( $ref, 11 );
-	my( $add_date ) = _date_parse(
-		unpack( "I", ${eat( $ref, 4 )} ) 
-		);
 
-	print  STDERR "\theader length is $header_length\n" if $Debug;
-	print  STDERR "\trecord length is $record_length\n" if $Debug;
-	print  STDERR "\thohms is $hohms\n" if $Debug;
-	printf STDERR "\tid is %x\n", $id if $Debug;
-	print  STDERR "\ttype is $type\n" if $Debug;
-	print  STDERR "\tdate modified is $date_modified [" . 
-		localtime($date_modified) . "]\n" if $Debug;
-	print  STDERR "\tfile size is $bytes\n" if $Debug;
-	print  STDERR "\tplay time is $time ms\n" if $Debug;
-	print  STDERR "\ttrack is $track of $tracks\n" if $Debug;
-	print  STDERR "\tyear is $year ms\n" if $Debug;
-	print  STDERR "\tbit rate is $bit_rate\n" if $Debug;
-	print  STDERR "\tsample rate is $sample_rate\n" if $Debug;
-	print  STDERR "\tvolume adjustment is $volume\n" if $Debug;
-	print  STDERR "\tstart time is $start ms\n" if $Debug;
-	print  STDERR "\tend time is $end ms\n" if $Debug;
-	print  STDERR "\tplay count is $play_count\n" if $Debug;
-	print  STDERR "\tplay count2 is $play_count2\n" if $Debug;
-	print  STDERR "\tcompilation is $compilation\n" if $Debug;
-	print  STDERR "\tfile type is $file_type\n" if $Debug;
-	print  STDERR "\tplay date is $play_date [" . 
-		localtime($play_date) . "]\n" if $Debug;
-	print  STDERR "\tdisk is $disk of $disks\n" if $Debug;
+	my $add_date        = _date_parse( _get_date( $ref ) );
+
+	warn "\tfile size is $bytes\n" if $Debug;
+	warn "\tplay time is $time ms\n" if $Debug;
+	warn "\ttrack is $track of $tracks\n" if $Debug;
+	warn "\tyear is $year\n" if $Debug;
+	warn "\tbit rate is $bit_rate\n" if $Debug;
+	warn "\tsample rate is $sample_rate\n" if $Debug;
+	warn "\tvolume adjustment is $volume\n" if $Debug;
+	warn "\tstart time is $start ms\n" if $Debug;
+	warn "\tend time is $end ms\n" if $Debug;
+	warn "\tplay count is $play_count\n" if $Debug;
+	warn "\tplay count2 is $play_count2\n" if $Debug;
+	warn "\tcompilation is $compilation\n" if $Debug;
+	warn "\tfile type is $file_type\n" if $Debug;
+	warn "\tplay date is $play_date [" . 
+		gmtime($play_date) . "]\n" if $Debug;
+	warn "\tdisk is $disk of $disks\n" if $Debug;
 	printf STDERR "\trating is %xh [%dd] => %d stars\n", $rating, 
 		$rating, $rating / 20 if $Debug;
-	print  STDERR "\tadd date is $add_date\n" if $Debug;
+	warn "\tadd date is $add_date\n" if $Debug;
 
-	eat( $ref, $header_length - $Ate );
+	_leftovers( $ref, $header_length );
 
 	my %hash;
 	my %songs;
@@ -325,129 +306,85 @@ sub hohm
 	my $ref = shift;
 	local $Ate = 0;
 
-	eat( $ref, 4 );
-	eat( $ref, 4 );
+	my $marker   = _get_marker( $ref );
+	my $eighteen = eat( $ref, 4 );
 
-	my( $length ) = unpack( "I", ${eat( $ref, 4 )} );
-	my( $type )   = unpack( "I", ${eat( $ref, 4 )} );
+	my $length = _get_length( $ref );
+	my( $type )   = _get_long_int( $ref );
 
-	print STDERR "\tlength is $length\n" if $Debug;
-	print STDERR "\ttype is [$type]" if $Debug;
-
-	print STDERR " => $hohm_types{$type}" 
-		if( $Debug and exists $hohm_types{$type} );
-
-	print STDERR "\n"  if $Debug;
+	die "Record type is not defined!" unless defined $type;
+	
+	warn "\tlength is $length\n" if $Debug;
+	warn "\t\ttype is [$type] => $hohm_types{$type}\n" if $Debug;
 
 	my %hohm = ( type => $type );
 
 	my( $dl, $data );
-	if( $type != 100 and $type != 1)
+	if( $type < 100 and $type != 1 )
 		{
 		eat( $ref, 4 ) for 1 .. 3;
 
-		($dl)  = unpack( "I", ${eat( $ref, 4 )} );
-
+		my $next_len = _get_length( $ref );
+		
 		eat( $ref, 4 ) for 1 .. 2;
 
-		($data) = unpack( 'A*', ${eat( $ref, $dl )} );
-		_strip_nulls( $data );
+		($data) = unpack( 'A*', ${eat( $ref, $next_len )} );
+		_strip_nulls( $data ); # XXX: unicode
 
 		$hohm{ $hohm_types{$type} } = $data;
 		}
 	elsif( $type == 1 )
 		{		
-		eat( $ref, 4 ) for 1 .. 3;
+		_get_long_int(  $ref ) for 1 .. 3;
+		_get_short_int( $ref );
 
-		eat( $ref, 2 );
+		my $next_len = _get_short_int( $ref );
+		warn "\t\tnext length is $next_len\n" if $Debug;
 
-		my ($next_len) = unpack( 'S', ${eat( $ref, 2 )} );
-		print STDERR "\tnext length is $next_len\n" if $Debug;
+		eat( $ref, $next_len ); #???
 
-		eat( $ref, $next_len );
+		$next_len     = _get_char_int( $ref );
+		$hohm{volume} = _get_unicode( $ref, $next_len );
+		warn "\t\tvolume length is $next_len [$hohm{volume}]\n" if $Debug;
 
-		($next_len) = unpack( 'S', "\000" . ${eat( $ref, 1 )} );
-		print STDERR "\tvolume length is $next_len\n" if $Debug;
-
-		my ($volume) = unpack( 'A*', ${eat( $ref, $next_len )} );
-		print STDERR "\tVolume is [$volume]\n" if $Debug;
-		_strip_nulls( $volume );
-		$hohm{volume} = $volume;
 		eat( $ref, 27 - $next_len ); # ???  why 27?
 
-		my( $some_date ) = unpack( 'I', ${eat( $ref, 4 )} );
-		#my( $some_date ) = unpack( 'I', $data ); # where is $data?
-
-		$some_date = _date_parse( $some_date );
-
-		print STDERR "\tsome date is [" . localtime( $some_date ) . "]\n" 
+		my $some_date = _date_parse( _get_date( $ref ) );
+		warn "\t\tsome date is [" . _sprint_date( $some_date ) . "]\n" 
 			if $Debug;
 
-		eat( $ref, 2*4 ) if $iTunes_version =~ /^3/;
+		eat( $ref, 2*4 );# if $iTunes_version =~ /^(?:3|4)/; #???
 
-		($next_len) = unpack( 'S', "\000" . ${eat( $ref, 1 )} );
-		print STDERR "\tfilename length is $next_len\n" if $Debug;
+		$next_len       = _get_char_int( $ref, 1 );
+		warn "\t\tnext length is $next_len\n" if $Debug;
+		$hohm{filename} = _get_unicode( $ref, $next_len );
+		warn "\t\tFilename is $hohm{filename}\n" if $Debug;
+		
+		eat( $ref, 71 - $next_len);
 
-		my ($filename) = unpack( 'A*', ${eat( $ref, $next_len )} );
-		print STDERR "\tfilename is [$filename]\n" if $Debug;
-		_strip_nulls( $filename );
-		$hohm{filename} = $filename;
-		eat( $ref, 71 -  $next_len);
-
-		my ($filetype) = unpack( 'A*', ${eat( $ref, 4 )} );
-		print STDERR "\tfiletype is [$filetype]\n" if $Debug;
-		_strip_nulls( $filetype );
-		$hohm{filetype} = $filetype;
-
-		my ($creator)  = unpack( 'A*', ${eat( $ref, 4 )} );
-		print STDERR "\tcreator is [$creator]\n" if $Debug;
-		_strip_nulls( $creator );
-		$hohm{creator} = $creator;
+		$hohm{filetype} = _get_string( $ref, 4 );
+		$hohm{creator}  = _get_string( $ref, 4 );
+		warn "\t\tTYPE [$hohm{filetype}] CREATOR [$hohm{creator}]\n" if $Debug;
 
 		eat( $ref, 5 * 4 );
 
-		($next_len) = unpack( 'I', ${eat( $ref, 4 )} );
+		$next_len        = _get_long_int( $ref );
+		warn "\t\tnext length is $next_len\n" if $Debug;
+		$hohm{directory} = _get_unicode( $ref, $next_len ); # 0 bytes?
+		}
+	elsif( $type == 102 or $type == 101 )
+		{
+		eat( $ref, 3*4 );
 
-		my ($directory) = unpack( 'A*', ${eat( $ref, $next_len )} ); # 0 bytes?
-		print STDERR "\tdirectory is [$directory]\n" if $Debug;
-		_strip_nulls( $directory );
-		$hohm{directory} = $directory;
-
-		# i don't know what this chunk of gobbledygook is
-		# the only thing i lose is my place, so i miss out
-		# on parsing the path at the end.  in iTunes 3 this
-		# doesn't matter so much because another hohm has
-		# the URL
-		while( 0 )
-			{
-			my( $next ) = unpack( 'A', ${eat( $ref, 1 )} );
-			printf STDERR "Next char is %x\n", ord($next) if $Debug;
-			next unless ( $next eq "\x5a" or $next eq "\xf7" );
-
-			$next  = unpack( 'C', ${eat( $ref, 1 )} );
-			printf STDERR "Next char is %x\n", $next if $Debug;
-
-			$next .= unpack( 'C', ${eat( $ref, 1 )} );
-			printf STDERR "Next char is %x\n", $next if $Debug;
-
-			die unless $next eq '02';
-
-			last;
-			}
-
-		#($next_len) = unpack( 'S', ${eat( $ref, 2 )} );
-
-		#my ($path) = unpack( 'A*', ${eat( $ref, $next_len )} );
-		#print STDERR "\tpath is [$path]\n" if $Debug;
-		#$hohm{path} = $path;
-
-		eat( $ref, $length - $Ate );
+		my $next_len = _get_length( $ref );
+		
+		$hohm{ $hohm_types{$type} } = 'Smart Playlist ' . ( $type % 100 );
 		}
 	else
 		{		
 		eat( $ref, 3*4 );
 
-		my ($next_len) = unpack( 'I', ${eat( $ref, 4 )} );
+		my $next_len = _get_length( $ref );
 
 		eat( $ref, 2*4 );
 
@@ -455,34 +392,27 @@ sub hohm
 		_strip_nulls( $playlist );
 		$playlist = 'Library' if $playlist eq '####!####';
 
-		print STDERR "\tplaylist is [$playlist]\n" if $Debug;
-		$hohm{playlist} = $playlist;
-
-		eat( $ref, $length - $Ate ); # 0 bytes
+		warn "\tplaylist is [$playlist]\n" if $Debug;
+		$hohm{ $hohm_types{$type} } = $playlist;
 		}
 
-	print STDERR "\tdata length is $dl\n\tdata is [$data]\n" 
-		unless( not $Debug or $type == 1 or $type == 100);
-	#eat( $ref, $length - 4 - 4 - 4 - 4 -12 -4);
-
+	_leftovers( $ref, $length );
+	
 	return \%hohm;
 	}
 
 sub hplm
 	{
 	my $ref   = shift;
-
 	local $Ate = 0;
 
-	eat( $ref, 4 );
+	my $marker = _get_marker( $ref );
+	my $length = _get_length( $ref );
+	
+	my( $lists  ) = _get_count( $ref );
+	warn "\t\tlists is $lists\n" if $Debug;
 
-	my( $length ) = unpack( "I", ${eat( $ref, 4 )} );
-	my( $lists  ) = unpack( "I", ${eat( $ref, 4 )} );
-
-	print STDERR "\tlength is $length\n" if $Debug;
-	print STDERR "\tlists is $lists\n" if $Debug;
-
-	eat( $ref, $length - $Ate );
+	_leftovers( $ref, $length );
 
 	return $lists;
 	}
@@ -490,36 +420,31 @@ sub hplm
 sub hpim
 	{
 	my $ref   = shift;
-
 	local $Ate = 0;
 
-	eat( $ref, 4 );
+	my $marker = _get_marker( $ref );
+	my $length = _get_length( $ref );
 
-	my( $length ) = unpack( "I", ${eat( $ref, 4 )} );
+	my( $foo )   = _get_long_int( $ref );
+	my( $hohms ) = _get_count( $ref );
+	warn "\thohm blocks in playlist is $hohms\n" if $Debug;
 
-	print STDERR "\tlength is $length\n" if $Debug;
+	my( $songs ) = _get_count( $ref );
 
-	my( $foo )   = unpack( "I", ${eat( $ref, 4 )} );
-	my( $hohms ) = unpack( "I", ${eat( $ref, 4 )} );
-	print STDERR "\thohm blocks in playlist is $hohms\n" if $Debug;
+	warn "\tsongs in playlist is $songs\n" if $Debug;
 
-	my( $songs ) = unpack( "I", ${eat( $ref, 4 )} );
+	_leftovers( $ref, $length );
 
-	print STDERR "\tsongs in playlist is $songs\n" if $Debug;
-
-	eat( $ref, $length - $Ate );
-
-	my $playlist;
+	my @playlists;
 	foreach my $index ( 1 .. $hohms )
 		{
 		my $result = $Dispatch{'hohm'}->( $ref );
-		require Data::Dumper;
-
-		print STDERR Data::Dumper::Dumper( $result ) if $Debug;
-
-		if( $result->{type} == 0x64 )
+		my( $name )  = grep { m/playlist/ } keys %$result;
+		
+		if( $result->{type} >= 0x64 )
 			{
-			$playlist = Mac::iTunes::Playlist->new( $result->{playlist} );
+			push @playlists, 
+				[ Mac::iTunes::Playlist->new( $result->{$name} ) ];
 			}
 		}
 
@@ -528,12 +453,12 @@ sub hpim
 		{
 		my $song = $Dispatch{'hptm'}->( $ref );
 
-		print STDERR "\tKey is $song\n" if $Debug;
+		warn "\tKey is $song\n" if $Debug;
 
-		push @songs, $song;
+		push @{ $playlists[-1] }, $song;
 		}
 
-	return ( $playlist, @songs );	
+	return @playlists;	
 	}
 
 sub hptm
@@ -541,18 +466,15 @@ sub hptm
 	my $ref = shift;
 	local $Ate = 0;
 
-	eat( $ref, 4 );
-
-	my( $length ) = unpack( "I", ${eat( $ref, 4 )} );
+	my $marker = _get_marker( $ref );
+	my $length = _get_length( $ref );
 	eat( $ref, 4 );
 
 	eat( $ref, 4*3 );
 
-	my( $song ) = make_song_key( unpack( "I", ${eat( $ref, 4 )} ) );
+	my( $song ) = make_song_key( _get_length( $ref ) );
 
-	print STDERR "\tlength is $length\n" if $Debug;
-
-	eat( $ref, $length - $Ate );
+	_leftovers( $ref, $length );
 
 	return $song;
 	}
@@ -578,10 +500,10 @@ sub eat
 	
 	if( $l == 0 )
 		{
-		my @caller = caller;
+		my @caller = caller(1);
 		
-		warn "Eating no bytes at $caller[0] line $caller[2]!\n"
-			if $ENV{ITUNES_DEBUG};
+		warn "Eating no bytes at $caller[3] line $caller[2]!\n"
+			if( $ENV{ITUNES_DEBUG} && $caller[3] !~ m/leftovers/ );
 		}
 		
 	$Ate += $l;
@@ -593,12 +515,62 @@ sub eat
 	\$data;
 	}
 
+sub _get_string    { unpack( "A*", ${eat( $_[0], $_[1] )} ) }
+sub _get_long_int  { unpack( "I",  ${eat( $_[0], 4     )} ) }
+sub _get_short_int { unpack( "S",  ${eat( $_[0], 2     )} ) }
+
+sub _get_char_int  { unpack( 'S', "\000" . ${eat( $_[0], 1 )} ) }
+
+sub _get_marker    { _get_string( $_[0], 4 )            }
+sub _get_length    { _get_long_int( @_ )                }
+sub _get_count     { _get_long_int( @_ )                }
+sub _get_date      { _get_long_int( @_ )                }
+
+sub _get_unicode   
+	{ 
+	my $s = _get_string( $_[0], $_[1] ); 
+	_strip_nulls( $s ); 
+	return $s; 
+	}
+
+sub _leftovers     { eat( $_[0], $_[1] - $Ate ) }
+	
 sub _strip_nulls
 	{
 	$_[0] =~ s/\000//g;
 	}
+	
+sub _next_length_debug
+	{
+	my $l = shift;
+	
+	my @caller = caller(1);
+	
+	warn "  ---> next length is $l at $caller[3] line $caller[2]\n";
+	}
 
-"See why 1984 won't be like 1984";
+my $Date_offset = 2082808800;
+
+sub _date_parse
+	{
+	my $integer = shift;
+
+	my $hex = sprintf "%x", $integer;
+	
+	return $integer if $integer < $Date_offset;
+
+	my $time = $integer - $Date_offset;
+	
+	warn "\ttime is [$time|$hex] [" . _sprint_date($time) . "]\n" if $Debug;
+	return $time;
+	}
+
+sub _sprint_date
+	{
+	my $time = shift;
+	
+	return scalar gmtime $time;
+	}
 
 =back
 
@@ -626,8 +598,11 @@ brian d foy,  E<lt>bdfoy@cpan.orgE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2002, brian d foy, All rights reserved
+Copyright 2004, brian d foy, All rights reserved
 
 You may redistribute this under the same terms as Perl.
 
 =cut
+
+"See why 1984 won't be like 1984";
+
