@@ -310,7 +310,8 @@ sub hohm
 		eat( $ref, 4 ) for 1 .. 2;
 	
 		($data) = unpack( 'A*', ${eat( $ref, $dl )} );
-		
+		_strip_nulls( $data );
+
 		$hohm{ $hohm_types{$type} } = $data;
 		}
 	elsif( $type == 1 )
@@ -329,6 +330,7 @@ sub hohm
 		
 		my ($volume) = unpack( 'A*', ${eat( $ref, $next_len )} );
 		print STDERR "\tVolume is [$volume]\n" if $Debug;
+		_strip_nulls( $volume );
 		$hohm{volume} = $volume;
 		eat( $ref, 27 - $next_len ); # ???  why 27?
 
@@ -347,15 +349,18 @@ sub hohm
 
 		my ($filename) = unpack( 'A*', ${eat( $ref, $next_len )} );
 		print STDERR "\tfilename is [$filename]\n" if $Debug;
+		_strip_nulls( $filename );
 		$hohm{filename} = $filename;
 		eat( $ref, 71 -  $next_len);
 	
 		my ($filetype) = unpack( 'A*', ${eat( $ref, 4 )} );
 		print STDERR "\tfiletype is [$filetype]\n" if $Debug;
+		_strip_nulls( $filetype );
 		$hohm{filetype} = $filetype;
 
 		my ($creator)  = unpack( 'A*', ${eat( $ref, 4 )} );
 		print STDERR "\tcreator is [$creator]\n" if $Debug;
+		_strip_nulls( $creator );
 		$hohm{creator} = $creator;
 
 		eat( $ref, 5 * 4 );
@@ -364,6 +369,7 @@ sub hohm
 
 		my ($directory) = unpack( 'A*', ${eat( $ref, $next_len )} );
 		print STDERR "\tdirectory is [$directory]\n" if $Debug;
+		_strip_nulls( $directory );
 		$hohm{directory} = $directory;
 		
 		# i don't know what this chunk of gobbledygook is
@@ -405,7 +411,7 @@ sub hohm
 		eat( $ref, 2*4 );
 		
 		my ($playlist) = unpack( 'A*', ${eat( $ref, $next_len )} );
-		$playlist =~ s/\000//g;
+		_strip_nulls( $playlist );
 		$playlist = 'Library' if $playlist eq '####!####';
 		
 		print STDERR "\tplaylist is [$playlist]\n" if $Debug;
@@ -537,6 +543,11 @@ sub eat
 	\$data;
 	}
 
+sub _strip_nulls
+	{
+	$_[0] =~ s/\000//g;
+	}
+	
 "See why 1984 won't be like 1984";
 
 =back
