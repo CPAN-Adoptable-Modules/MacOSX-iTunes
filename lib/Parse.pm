@@ -12,6 +12,32 @@ use Mac::iTunes::Playlist;
 
 $VERSION = sprintf "%d.%02d", q$Revision$ =~ m/ (\d+) \. (\d+) /gx;
 
+=head1 NAME
+
+Mac::iTunes::Library::Parse - parse the iTunes binary database file
+
+=head1 SYNOPSIS
+
+This class is usually used by Mac::iTunes.
+
+	use Mac::iTunes;
+	my $library = Mac::iTunes->new( $library_path );
+	
+If you want to fool with the data structure, you can use the parse
+functions.
+
+	use Mac::iTunes::Library::Parse;
+	my $library = Mac::iTunes::Library::Parse::parse( FILENAME );
+	
+=head1 DESCRIPTION
+
+Most functions output debugging information if the environment
+variable ITUNES_DEBUG is a true value.
+
+=head2 Functions
+
+=cut
+
 $Debug = $ENV{ITUNES_DEBUG} || 0;
 $Ate   = 0;
 
@@ -29,9 +55,10 @@ my %Dispatch = (
 	
 =over 4
 
-=item parse
+=item parse( FILEHANDLE )
 
-Turn the iTunes Music Library into the Mac::iTunes object.
+Turn the iTunes Music Library into the Mac::iTunes object. It takes
+a filehandle to the open-ed C<iTunes Music Library> file.
 
 =cut
 
@@ -42,7 +69,7 @@ sub parse
 
 	my $data = do { local $/; <$fh> };
 
-	warn "Data length is ", length($data) . "\n" if $Debug;
+	warn "Library length is ", length($data) . "\n" if $Debug;
 
 	my %songs     = ();
 
@@ -89,6 +116,13 @@ sub parse
 	$itunes;	
 	}
 
+=item hdfm( DATA )
+
+The hdfm record is the master record for the library.  It holds
+the iTunes aaplication version number.
+
+=cut
+
 sub hdfm
 	{
 	my $ref = shift;
@@ -97,7 +131,7 @@ sub hdfm
 	my $marker = _get_marker( $ref );
 	my $length = _get_length( $ref );
 
-	eat( $ref, 8 );
+	_skip( $ref, 8 );
 
 	my $next_len    = _get_char_int( $ref );
 	$iTunes_version = _get_string( $ref, $next_len );
@@ -114,8 +148,6 @@ sub hd
 
 	my $marker = _get_marker( $ref );
 	my $length = _get_length( $ref );
-
-	_next_length_debug( $length ) if $Debug;
 
 	_leftovers( $ref, $length );
 	}
@@ -135,9 +167,7 @@ sub htlm
 	my $marker = _get_marker( $ref );
 	my $length = _get_length( $ref );
 
-	my( $songs ) = _get_count( $ref );
-
-	_next_length_debug( $length ) if $Debug;
+	my $songs  = _get_count( $ref );
 	warn "\tsong count is $songs\n" if $Debug;
 
 	_leftovers( $ref, $length );	
@@ -155,6 +185,8 @@ sub htim
 	{
 	my $ref    = shift;
 	local $Ate = 0;
+
+	my %hash;
 
 	my $marker         = _get_marker( $ref );
 	my $header_length  = _get_length( $ref );
@@ -196,7 +228,7 @@ sub htim
 
 	my $compilation    = _get_short_int( $ref );
 
-	eat( $ref, 3*4 );
+	_skip( $ref, 3*4 );
 
 	my $play_count2     = _get_count( $ref );
 
@@ -206,7 +238,7 @@ sub htim
 
 	my $rating          = _get_char_int( $ref );
 
-	eat( $ref, 11 );
+	_skip( $ref, 11 );
 
 	my $add_date        = _date_parse( _get_date( $ref ) );
 
@@ -232,7 +264,6 @@ sub htim
 
 	_leftovers( $ref, $header_length );
 
-	my %hash;
 	my %songs;
 	foreach my $index ( 1 .. $hohms )
 		{		
@@ -301,16 +332,22 @@ BEGIN {
 	);
 }
 
+=item hohm
+
+The hohm record holds variable length data.
+
+=cut
+
 sub hohm
 	{
 	my $ref = shift;
 	local $Ate = 0;
 
-	my $marker   = _get_marker( $ref );
-	my $eighteen = eat( $ref, 4 );
+	my $marker    = _get_marker( $ref );
+	my $eighteen  = _get_long_int( $ref );
 
-	my $length = _get_length( $ref );
-	my( $type )   = _get_long_int( $ref );
+	my $length    = _get_length( $ref );
+	my $type      = _get_long_int( $ref );
 
 	die "Record type is not defined!" unless defined $type;
 	
@@ -322,14 +359,13 @@ sub hohm
 	my( $dl, $data );
 	if( $type < 100 and $type != 1 )
 		{
-		eat( $ref, 4 ) for 1 .. 3;
+		_skip( $ref, 4 ) for 1 .. 3;
 
 		my $next_len = _get_length( $ref );
 		
-		eat( $ref, 4 ) for 1 .. 2;
+		_skip( $ref, 4 ) for 1 .. 2;
 
 		$data = _get_unicode( $ref, $next_len );
-		_strip_nulls( $data ); # XXX: unicode
 
 		$hohm{ $hohm_types{$type} } = $data;
 		}
@@ -341,32 +377,32 @@ sub hohm
 		my $next_len = _get_short_int( $ref );
 		warn "\t\tnext length is $next_len\n" if $Debug;
 
-		eat( $ref, $next_len ); #???
+		_skip( $ref, $next_len ); #???
 
 		$next_len     = _get_char_int( $ref );
 		$hohm{volume} = _get_unicode( $ref, $next_len );
 		warn "\t\tvolume length is $next_len [$hohm{volume}]\n" if $Debug;
 
-		eat( $ref, 27 - $next_len ); # ???  why 27?
+		_skip( $ref, 27 - $next_len ); # ???  why 27?
 
 		my $some_date = _date_parse( _get_date( $ref ) );
 		warn "\t\tsome date is [" . _sprint_date( $some_date ) . "]\n" 
 			if $Debug;
 
-		eat( $ref, 2*4 );# if $iTunes_version =~ /^(?:3|4)/; #???
+		_skip( $ref, 2*4 );# if $iTunes_version =~ /^(?:3|4)/; #???
 
 		$next_len       = _get_char_int( $ref, 1 );
 		warn "\t\tnext length is $next_len\n" if $Debug;
 		$hohm{filename} = _get_unicode( $ref, $next_len );
 		warn "\t\tFilename is $hohm{filename}\n" if $Debug;
 		
-		eat( $ref, 71 - $next_len);
+		_skip( $ref, 71 - $next_len );
 
 		$hohm{filetype} = _get_string( $ref, 4 );
 		$hohm{creator}  = _get_string( $ref, 4 );
 		warn "\t\tTYPE [$hohm{filetype}] CREATOR [$hohm{creator}]\n" if $Debug;
 
-		eat( $ref, 5 * 4 );
+		_skip( $ref, 5 * 4 );
 
 		$next_len        = _get_long_int( $ref );
 		warn "\t\tnext length is $next_len\n" if $Debug;
@@ -374,7 +410,7 @@ sub hohm
 		}
 	elsif( $type == 102 or $type == 101 )
 		{
-		eat( $ref, 3*4 );
+		_skip( $ref, 3*4 );
 
 		my $next_len = _get_length( $ref );
 		
@@ -382,11 +418,11 @@ sub hohm
 		}
 	else
 		{		
-		eat( $ref, 3*4 );
+		_skip( $ref, 3*4 );
 
 		my $next_len = _get_length( $ref );
 
-		eat( $ref, 2*4 );
+		_skip( $ref, 2*4 );
 
 		my $playlist = _get_unicode( $ref, $next_len );
 		$playlist = 'Library' if $playlist eq '####!####';
@@ -400,6 +436,12 @@ sub hohm
 	return \%hohm;
 	}
 
+=item hplm
+
+The hplm record starts a list of playlists.
+
+=cut
+
 sub hplm
 	{
 	my $ref   = shift;
@@ -408,13 +450,19 @@ sub hplm
 	my $marker = _get_marker( $ref );
 	my $length = _get_length( $ref );
 	
-	my( $lists  ) = _get_count( $ref );
+	my $lists  = _get_count( $ref );
 	warn "\t\tlists is $lists\n" if $Debug;
 
 	_leftovers( $ref, $length );
 
 	return $lists;
 	}
+
+=item hpim
+
+The hpim record holds playlists
+
+=cut
 
 sub hpim
 	{
@@ -424,11 +472,11 @@ sub hpim
 	my $marker = _get_marker( $ref );
 	my $length = _get_length( $ref );
 
-	my( $foo )   = _get_long_int( $ref );
-	my( $hohms ) = _get_count( $ref );
+	my $foo    = _get_long_int( $ref );
+	my $hohms  = _get_count( $ref );
 	warn "\thohm blocks in playlist is $hohms\n" if $Debug;
 
-	my( $songs ) = _get_count( $ref );
+	my $songs  = _get_count( $ref );
 
 	warn "\tsongs in playlist is $songs\n" if $Debug;
 
@@ -460,6 +508,12 @@ sub hpim
 	return @playlists;	
 	}
 
+=item
+
+The hptm record holds a track identifier.
+
+=cut
+
 sub hptm
 	{
 	my $ref = shift;
@@ -467,9 +521,9 @@ sub hptm
 
 	my $marker = _get_marker( $ref );
 	my $length = _get_length( $ref );
-	eat( $ref, 4 );
 
-	eat( $ref, 4*3 );
+	_skip( $ref, 4 );
+	_skip( $ref, 4*3 );
 
 	my( $song ) = make_song_key( _get_length( $ref ) );
 
@@ -483,7 +537,7 @@ sub make_song_key
 	sprintf "%08x", $_[0];
 	}
 
-sub peek
+sub _peek
 	{
 	my $ref = shift;
 
@@ -492,17 +546,17 @@ sub peek
 	sprintf "%x", unpack( "v", "\000" . $data );
 	}
 
-sub eat
+sub _eat
 	{
 	my $ref = shift;
 	my $l   = shift || 0;
 	
 	if( $l == 0 )
 		{
-		my @caller = caller(1);
+		my @caller = caller(2);
 		
 		warn "Eating no bytes at $caller[3] line $caller[2]!\n"
-			if( $ENV{ITUNES_DEBUG} && $caller[3] !~ m/leftovers/ );
+			if( $ENV{ITUNES_DEBUG} && $caller[3] !~ m/leftovers|skip/ );
 		}
 		
 	$Ate += $l;
@@ -514,16 +568,24 @@ sub eat
 	\$data;
 	}
 
-sub _get_string    { unpack( "A*", ${eat( $_[0], $_[1] )} ) }
-sub _get_long_int  { unpack( "N",  ${eat( $_[0], 4     )} ) }
-sub _get_short_int { unpack( "n",  ${eat( $_[0], 2     )} ) }
+sub _get_string    { unpack( "A*", ${_eat( $_[0], $_[1] )} ) }
+sub _get_long_int  { unpack( "N",  ${_eat( $_[0], 4     )} ) }
+sub _get_short_int { unpack( "n",  ${_eat( $_[0], 2     )} ) }
 
-sub _get_char_int  { unpack( 'n', "\000" . ${eat( $_[0], 1 )} ) }
+sub _get_char_int  { unpack( 'n', "\000" . ${_eat( $_[0], 1 )} ) }
 
 sub _get_marker    { _get_string( $_[0], 4 )            }
-sub _get_length    { _get_long_int( @_ )                }
 sub _get_count     { _get_long_int( @_ )                }
 sub _get_date      { _get_long_int( @_ )                }
+
+sub _get_length    
+	{ 
+	my $l = _get_long_int( @_ );
+	
+	_next_length_debug( $l ) if $Debug;
+               
+    return $l
+	}
 
 sub _get_unicode   
 	{ 
@@ -532,7 +594,23 @@ sub _get_unicode
 	return $s; 
 	}
 
-sub _leftovers     { eat( $_[0], $_[1] - $Ate ) }
+sub _skip
+	{
+	my( $ref, $length ) = @_;
+	
+	warn "Skipping [$length] bytes\n" if $Debug;
+	
+	_eat( $ref, $length ); 
+	}
+	
+sub _leftovers     
+	{
+	my( $ref, $length ) = @_;
+	
+	my $diff = $length - $Ate;
+	
+	_skip( $ref, $diff ); 
+	}
 	
 sub _strip_nulls
 	{
@@ -585,7 +663,7 @@ members of the project can shepherd this module appropriately.
 
 =head1 SEE ALSO
 
-L<Mac::iTunes>, L<Mac::iTunes::Item>
+L<Mac::iTunes>, L<Mac::iTunes::Item>, L<Mac::iTunes::Playlist>
 
 =head1 TO DO
 
