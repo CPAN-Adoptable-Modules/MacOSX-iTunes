@@ -1,3 +1,8 @@
 * parse needs to add songs to the playlist in hpim()
 
 * rig the Makefile to skip Mac stuff for other platforms
+
+* make a Perl version of iTunes Publisher
+	+ test
+	+ tabbed text
+	+ Quicktime Streaming media format
