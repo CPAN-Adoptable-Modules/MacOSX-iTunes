@@ -35,6 +35,7 @@ item.t
 playlist.t
 parse.t
 parse3.t
+parse4.t
 preferences.t
 HERE
 	
@@ -120,5 +121,5 @@ WriteMakefile(
     	'doc/file_format.pod' => '$(INST_MAN3DIR)/Mac::iTunes::FileFormat.3',
 		},
 	    	
-    clean  => { FILES      => q|Mac-iTunes-* mp3/iTunes\\ Music\\ Library t/test_manifest| },
+    clean  => { FILES      => q|Mac-iTunes-* mp3/iTunes\\ Music\\ Library t/test_manifest NO_MAC| },
 	);
