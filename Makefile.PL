@@ -24,6 +24,8 @@ WriteMakefile(
 
 	'PREREQ_PM' => {
 		Test::Manifest    => undef,
+		Test::More        => undef,
+		Test::Pod         => undef,
 		Mac::AppleScript  => undef,
 		Mac::PropertyList => undef,
 		},
