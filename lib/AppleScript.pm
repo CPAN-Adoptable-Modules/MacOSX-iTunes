@@ -5,7 +5,9 @@ use base qw(Exporter);
 use vars qw($AUTOLOAD @EXPORT_OK %EXPORT_TAGS);
 
 use Carp qw(carp);
+use File::Spec;
 use Mac::AppleScript qw(RunAppleScript);
+use Mac::Path::Util;
 
 my $Singleton = undef;
 @EXPORT_OK = qw(TRUE FALSE PLAYING STOPPED PAUSED SMALL MEDIUM LARGE);
@@ -14,7 +16,14 @@ my $Singleton = undef;
 	state   => [ qw(PLAYING STOPPED PAUSED) ],
 	size    => [ qw(SMALL MEDIUM LARGE) ],
 	);
-	
+
+use constant STOPPED          => 'stopped';
+use constant PLAYING          => 'playing';
+#use constant PAUSED           => 'paused';
+use constant PAUSED           => 'stopped';
+use constant FAST_FORWARDING  => 'fast forwarding';
+use constant REWINDING        => 'rewinding';
+
 =head1 NAME
 
 Mac::iTunes::AppleScript - control iTunes from Perl
@@ -38,27 +47,38 @@ $itunes->quit;
 =cut
 
 # %Tell holds simple methods for AUTOLOAD
-my %Tell = ( 
-	map( { $_, $_ } 
+my %Tell = (
+	map( { $_, $_ }
 		qw(activate run play pause quit playpause resume rewind stop) ),
-	map( { my $x = $_; $x =~ tr/_/ /; ( $_, $x ) } 
+	map( { my $x = $_; $x =~ tr/_/ /; ( $_, $x ) }
 		qw(fast_forward back_track next_track previous_track) )
 		);
-@Tell{ qw(next previous redo) } = 
+@Tell{ qw(next previous redo) } =
 	@Tell{ qw(next_track previous_track back_track) };
 
 my %Properties = (
-	map( { $_, $_ } 
+	map( { $_, $_ }
 		qw(mute version volume) ),
-	map( { my $x = $_; $x =~ tr/_/ /; ( $_, $x ) } 
+	map( { my $x = $_; $x =~ tr/_/ /; ( $_, $x ) }
 		qw(sound_volume player_state player_position
 		EQ_enabled fixed_indexing current_visual
 		visuals_enabled visual_size full_screen
 		current_encoder frontmost) )
 		);
 
-@Properties{ qw(volume state position) } = 
+@Properties{ qw(volume state position) } =
 	@Properties{ qw(sound_volume player_state player_position) };
+
+my %Track_properties = ( map( { $_, 1 } qw( album artist comment composer
+	duration genre rating year compilation enabled EQ finish
+	kind size start time name) ),
+	map( { my $x = $_; $x =~ tr/_/ /; ( $_, $x ) }
+		qw(bit_rate database_ID date_added disc_count disc_number
+		modification date played_count played_date rating sample_rate
+		track_count track_number volume_adjustment) )
+		);
+
+my %Which_track = map { $_, 1 } qw( current );
 
 use constant TRUE   => 'true';
 use constant FALSE  => 'false';
@@ -74,11 +94,11 @@ my %Validate = (
 	volume       => \&_validate_volume,
 	sound_volume => \&_validate_volume,
 	);
-	
+
 sub _validate_boolean { ( $_[0] and $_[0] ne FALSE ) ? TRUE : FALSE }
-sub _validate_volume 
+sub _validate_volume
 	{
-	# for some reason iTunes sets the volume to 
+	# for some reason iTunes sets the volume to
 	# one less
 	my $volume = do {
 		   if( $_[0] > 100 ) { 101       }
@@ -86,16 +106,16 @@ sub _validate_volume
 		else                 { $_[0] + 1 }
 		};
 	}
-	
+
 sub AUTOLOAD
 	{
 	my $self   = shift;
 	my $value  = shift;
-	
+
 	my $method = $AUTOLOAD;
-	
+
 	$method =~ s/.*:://g;
-	
+
 	if( exists $Tell{ $method } )
 		{
 		$self->tell( $Tell{ $method } );
@@ -113,19 +133,24 @@ sub AUTOLOAD
 				}
 			else { $value }
 			};
-				
-		_set_value( $Properties{ $method }, $valid_value );
+
+		$self->_set_value( $Properties{ $method }, $valid_value );
 		}
 	elsif( exists $Properties{ $method } )
 		{
-		_get_value( $Properties{ $method } );
+		$self->_get_value( $Properties{ $method } );
+		}
+	elsif( $method =~ m/(.*?)_track_(.*)/ and
+		exists $Track_properties{ $2 } and exists $Which_track{ $1 } )
+		{
+		$self->_track( $2, $1 );
 		}
 	else
 		{
-		carp "I didn't know what to do with [$method]";
+		carp "I didn't know what to do with [$method] [$1] [$2]";
 		return;
-		}	
-		
+		}
+
 	}
 
 =item new()
@@ -137,14 +162,14 @@ Returns a singleton object that can control iTunes.
 sub new
 	{
 	my $class = shift;
-	
+
 	unless( defined $Singleton )
 		{
 		$Singleton = bless {}, $class;
 		}
-		
+
 	return $Singleton;
-	}	
+	}
 
 =item play
 
@@ -193,19 +218,346 @@ Quit iTunes
 
 =item open_url( URL )
 
+Open an item from the given URL
+
 =cut
 
 sub open_url
 	{
 	my $self = shift;
 	my $url  = shift;
-	
+
 	$self->tell("open location $url");
 	}
+
+=back
+
+=head2 Methods for tracks
+
+=over
+
+=cut
+
+sub _track
+	{
+	my $self  = shift;
+	my $name  = shift;
+	my $which = shift;
+
+	my $result = $self->tell( "return $name of $which track" );
+
+	# the current track means the one playing, so if one isn't
+	# playing, the applescript command succeeds and tell() returns
+	# 1, but there is no data.
+	return if( $result eq '1' and $self->state eq STOPPED );
+
+	# print STDERR "Result is $result";
+
+	$result;
+	}
+
+=item current_track_name
+
+=cut
+
+=item add_track( FILE, PLAYLIST_NAME )
+
+Add the unix style path FILE to the user playlist with
+name PLAYLIST_NAME.  Relative paths are resolved according
+to the current working directory.
+
+	add_track( 'mp3/song.mp3', 'Favorites' )
+
+This function will create the playlist if it does not exist.
+
+This function does not check if the track already exists in
+the playlist.  If it does, you end up with duplicates.
+
+=cut
+
+sub _get_mac_path
+	{
+	my $self = shift;
+	my $file = shift;
 	
+	my $path = File::Spec->rel2abs( $file );
+	return unless -e $path;
+	
+	my $util = Mac::Path::Util->new( $path );
+	my $mac_path = $util->mac_path;
+	
+	return $mac_path;
+	}
+	
+sub add_track($$$)
+	{
+	my $self     = shift;
+	my $file     = shift;
+	my $playlist = shift;
+	
+	my $mac_path = $self->_get_mac_path( $file );
+	return unless defined $mac_path;
+	
+	my $exists = $self->playlist_exists( $playlist );
+	#print STDERR "Playlist exists is [$exists]";
+	
+	$self->add_playlist( $playlist ) unless $exists;
+
+	$mac_path = $self->_escape_quotes( $mac_path );
+	$playlist = $self->_escape_quotes( $playlist );
+	
+	my $script =<<"SCRIPT";
+	set myName to alias "$mac_path"
+	add myName to playlist "$playlist"
+SCRIPT
+
+	my $result = $self->tell( $script );
+	}
+
+=item track_file_exists
+
+BROKEN!
+
+Returns true if the file is already in the iTunes library.
+
+The library actually stores aliases to the real files, so
+I can't simply check the file names---very frustrating.
+
+=cut
+
+sub track_file_exists
+	{
+	my $self     = shift;
+	my $file     = shift;
+	
+	my $mac_path = $self->_get_mac_path( $file );
+	return unless defined $mac_path;	
+	}
+
+=item get_track_at_position( POSITION [, PLAYLIST ] )
+
+=cut
+
+sub get_track_at_position($$;$)
+	{
+	my $self     = shift;
+	my $position = shift;
+	my $playlist = shift || $self->{_playlist};
+	
+	$playlist = $self->_escape_quotes( $playlist );
+	
+	my $script =<<"SCRIPT";
+	return name of track $position of playlist "$playlist"
+SCRIPT
+
+	my $name = $self->tell( $script );
+	}
+
+=item play_track( POSITION, [, PLAYLIST ] )
+
+=cut
+
+sub play_track($$;$)
+	{
+	my $self     = shift;
+	my $position = shift;
+	my $playlist = shift || $self->{_playlist};
+	
+	$playlist = $self->_escape_quotes( $playlist );
+	
+	my $script =<<"SCRIPT";
+	play track $position of playlist "$playlist"
+SCRIPT
+
+	my $name = $self->tell( $script );
+	}
+	
+=item get_track_names_in_playlist( [ PLAYLIST ] )
+
+Return an anonymous array of the names of the tracks in
+playlist PLAYLIST.
+
+Uses the currently set playlist if you don't specify
+one.
+
+=cut
+
+sub get_track_names_in_playlist
+	{
+	my $self     = shift;
+	my $playlist = shift || $self->{_playlist};
+
+	$playlist = $self->_escape_quotes( $playlist );
+
+	my $script =<<"SCRIPT";
+	set myPlaylist to "$playlist"
+	set myString to ""
+	repeat with i from 1 to count of tracks in playlist myPlaylist
+		set thisName to name of track i in playlist myPlaylist
+		set myString to myString & thisName & return
+	end repeat
+	return myString
+SCRIPT
+
+	my $result = $self->tell( $script );
+
+	my @list = split /\015/, $result; 
+	
+	#local $" = " <-> ";
+	#print STDERR "Found " . @list . " items [@list]\n";
+	return \@list;
+	}
+		
+=back
+
+=head2 Methods for playlists
+
+=over 4
+
+=item get_playlists
+
+Return an anonymous array of the names of the playlists.
+
+=cut
+
+sub get_playlists
+	{
+	my $self = shift;
+	
+	my $script =<<'SCRIPT';
+	set myString to ""
+	set myList to playlists
+	repeat with i from 1 to count of myList
+		set thisName to name of item i of myList
+		set myString to myString & thisName & return
+	end repeat
+	return myString
+SCRIPT
+
+	my $result = $self->tell( $script );
+#	print STDERR "Result is $result\n";
+	
+	my @list = split /\015/, $result; 
+#	local $" = " <-> ";
+#	print STDERR "Found " . @list . " items [@list]\n";
+	return \@list;
+	}
+	
+=item set_playlist( NAME )
+
+Set the current controller playlist.
+
+Returns true if it succeeds, and false otherwise (for instance,
+if the playlist does not exist.
+
+=cut
+
+sub set_playlist($$)
+	{
+	my $self = shift;
+	my $name = shift;
+	
+	return unless $self->playlist_exists( $name );
+	
+	$self->{_playlist} = $name;
+	}
+	
+=item add_playlist( NAME )
+
+Add a playlist with the name NAME.  Any double-quotes
+in NAME become single quotes.
+
+=cut
+
+sub add_playlist
+	{
+	my $self = shift;
+	my $name = shift;
+
+	$name = $self->_escape_quotes( $name );
+
+	my $script =<<"SCRIPT";
+	set myList to make new playlist
+	set name of myList to "$name"
+SCRIPT
+
+	$self->tell( $script );
+	}
+
+=item delete_playlist( NAME )
+
+Delete all playlists with the name NAME.
+
+=cut
+
+sub delete_playlist
+	{
+	my $self = shift;
+	my $name = shift;
+
+	$name = $self->_escape_quotes( $name );
+
+	# we have to go backwards because iTunes renumbers playlists
+	# as we delete them.  we can't delete multiple playlists
+	# atomically.
+	my $script =<<"SCRIPT";
+	repeat with i from (the count of the playlists) to 1 by -1
+		set this_playlist to playlist i
+		try
+			if the name of this_playlist is "$name" then
+				delete playlist i
+			end if
+		end try
+	end repeat
+SCRIPT
+
+	$self->tell( $script );
+	}
+
+=item playlist_exists( NAME )
+
+Returns the number of playlists with name NAME.
+
+=cut
+
+sub playlist_exists
+	{
+	my $self = shift;
+	my $name = shift;
+
+	$name = $self->_escape_quotes( $name );
+	
+	my $script =<<"SCRIPT";
+	set myCount to 0
+	repeat with i from 1 to (the count of the playlists)
+		set this_playlist to playlist i
+		try
+			if the name of this_playlist is "$name" then
+				set myCount to myCount + 1
+			end if
+		end try
+	end repeat
+
+	return myCount
+SCRIPT
+
+	my $exists = $self->tell( $script );
+
+	return $exists eq '1' ? 1 : 0;
+	}
+
+=back
+
+=head2 General AppleScript methods
+
+=over
+
 =item tell( COMMAND )
 
-The tell() method runs a simple applescript
+The tell() method runs a simple applescript.
+
+If the ITUNES_TELL environment variable is set to a true value,
+it prints the script to SDTERR before it runs it.
 
 =cut
 
@@ -213,24 +565,40 @@ sub tell
 	{
 	my $self    = shift;
 	my $command = shift;
-	
-	RunAppleScript( qq(tell application "iTunes"\n$command\nend tell) );
+
+	my $script = qq(tell application "iTunes"\n$command\nend tell);
+	print STDERR "\n", "-" x 50, "\n", $script, "\n", "-" x 50, "\n"
+		if $ENV{ITUNES_TELL};
+		
+	my $result = RunAppleScript( $script );
+
+	if( $@ )
+		{
+		carp $@;
+		return;
+		}
+
+	return 1 if( defined $result and $result eq '' );
+
+	$result =~ s/^"|"$//g;
+
+	return $result;
 	}
-	
+
 sub _osascript
 	{
 	my $script = shift;
-	
+
 	print STDERR "Script is $script\n" if $ENV{ITUNES_DEBUG} > 1;
 	require IPC::Open2;
-	
+
 	my( $read, $write );
 	my $pid = IPC::Open2::open2( $read, $write, 'osascript' );
-	
+
 	print $write qq(tell application "iTunes"\n), $script,
 		qq(\nend tell\n);
 	close $write;
-	
+
 	my $data = do { local $/; <$read> };
 
 	return $data;
@@ -238,23 +606,34 @@ sub _osascript
 
 sub _get_value
 	{
+	my $self     = shift;
 	my $property = shift;
 
-	my $value = _osascript( "return( $property )" );
-	
+	my $value = $self->tell( "return( $property )" );
+
 	chomp $value;
-	
+
 	$value;
 	}
 
 sub _set_value
 	{
+	my $self     = shift;
 	my $property = shift;
 	my $value    = shift;
-	
-	_osascript( "set $property to $value\n" );
-	
-	return _get_value( $property );
+
+	$self->tell( "set $property to $value\n" );
+
+	return $self->_get_value( $property );
+	}
+
+sub _escape_quotes
+	{
+	my $self   = shift;
+	my $string = shift;
+	$string =~ s/"/\\"/g;
+
+	$string;
 	}
 	
 sub DESTROY { 1 };
@@ -272,15 +651,8 @@ the following symbolic constants:
 
 =cut
 
-use constant STOPPED          => 'stopped';
-use constant PLAYING          => 'playing';
-#use constant PAUSED           => 'paused';
-use constant PAUSED           => 'stopped';
-use constant FAST_FORWARDING  => 'fast forwarding';
-use constant REWINDING        => 'rewinding';
-	
 =back
-	
+
 =head1 SEE ALSO
 
 =head1 AUTHOR
