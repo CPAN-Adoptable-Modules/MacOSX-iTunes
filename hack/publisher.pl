@@ -2,6 +2,9 @@
 # $Id$
 use strict;
 
+$ENV{ITUNES_DEBUG} = 1;
+
+use Data::Dumper;
 use lib qw(blib/lib);
 
 use Mac::iTunes::Library::Parse;
@@ -12,7 +15,4 @@ my $iTunes = Mac::iTunes->read( $library );
 
 my $playlist = $iTunes->get_playlist( 'Library' );
 
-foreach my $item ( $playlist->items )
-	{
-	print $item->title, "\n";
-	}
+print Data::Dumper::Dumper( $playlist );
