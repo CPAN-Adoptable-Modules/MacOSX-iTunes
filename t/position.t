@@ -12,7 +12,7 @@ isa_ok( $controller, 'Mac::iTunes::AppleScript' );
 
 $controller->stop;
 is( $controller->player_state, STOPPED );
-undef_ok( $controller->position );
+is( $controller->position, 0 );
 
 $controller->play;
 is( $controller->player_state, PLAYING );

@@ -13,7 +13,7 @@ my $tests = do {
 	
 WriteMakefile(
     'NAME'		    => 'Mac::iTunes',
-	'VERSION'       => '0.6_02',
+	'VERSION'       => '0.6_05',
 	
     'PM'            => {
      	'lib/AppleScript.pm'  => '$(INST_LIBDIR)/iTunes/AppleScript.pm',
