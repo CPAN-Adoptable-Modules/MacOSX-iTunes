@@ -6,6 +6,8 @@ use CGI qw(:standard);
 use Mac::iTunes;
 use Text::Template;
 
+my $Template = '/Users/brian/Dev/MacOSX/iTunes/html/iTunes.html';
+
 =head1 NAME
 
 iTunes.cgi - control iTunes from the web
@@ -29,9 +31,14 @@ my $controller = Mac::iTunes->new()->controller;
 my $command = param('command');
 
 my %Commands = map { $_, 1 } qw( play stop pause );
+
+my %var;
 	
 $controller->$command if exists $Commands{$command};
 
-my $html = 'placeholder';
+$var{state}   = $controller->player_state;
+$var{current} = $controller->current_track_name;
 
-print header(), $html;
+my $html = Text::Template::fill_in_file( $Template, HASH => \%var );
+
+print header(), $html, "\n";
