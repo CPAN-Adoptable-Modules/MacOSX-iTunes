@@ -4,6 +4,8 @@ use strict;
 
 use vars qw($Debug $Ate %hohm_types $iTunes_version);
 
+use Carp qw(carp croak);
+
 use Mac::iTunes;
 use Mac::iTunes::Item;
 use Mac::iTunes::Playlist;
@@ -22,7 +24,22 @@ my %Dispatch = (
 	hptm => \&hptm, # song in playlist
 	);
 
+my $Date_offset = 2082808800;
+
+sub _date_parse
+	{
+	my $integer = shift;
+	
+	return $integer if $integer < $Date_offset;
+	
+	return $integer - $Date_offset;
+	}
+		
 =over 4
+
+=item parse
+
+Turn the iTunes Music Library into the Mac::iTunes object.
 
 =cut
 	
@@ -104,7 +121,7 @@ sub hd
 	
 	my( $length ) = unpack( "I", ${eat( $ref, 4 )} );
 		
-	print STDERR "\tlength is $length\n" if $Debug;
+	print STDERR "\thd length is $length\n" if $Debug;
 	
 	eat( $ref, $length - $Ate );
 	}
@@ -127,8 +144,8 @@ sub htlm
 	
 	my( $songs ) = unpack( "I", ${eat( $ref, 4 )} );
 	
-	print STDERR "\tlength is $length\n" if $Debug;
-	print STDERR "\tsongs is $songs\n" if $Debug;
+	print STDERR "\thtml length is $length\n" if $Debug;
+	print STDERR "\tsong count is $songs\n" if $Debug;
 	
 	eat( $ref, $length - $Ate );	
 		
@@ -154,12 +171,14 @@ sub htim
 			
 	my( $hohms )  = unpack( "I", ${eat( $ref, 4 )} );
 	
-	my( $id )     = unpack( "I", ${eat( $ref, 4 )} );
-	my( $type )   = unpack( "I", ${eat( $ref, 4 )} );
+	my( $id )            = unpack( "I", ${eat( $ref, 4 )} );
+	my( $type )          = unpack( "I", ${eat( $ref, 4 )} );
 	eat( $ref, 4 );
-
+	
 	my( $file_type ) = unpack( "A*", ${eat( $ref, 4 )} );
-	eat( $ref, 4 );
+	my( $date_modified ) = _date_parse(
+		unpack( "I", ${eat( $ref, 4 )} ) 
+		);
 	
 	my( $bytes )  = unpack( "I", ${eat( $ref, 4 )} );
 	my( $time  )  = unpack( "I", ${eat( $ref, 4 )} );
@@ -173,24 +192,37 @@ sub htim
 	
 	eat( $ref, 5*4 + 2 );
 	my( $creator ) = unpack( "A*", ${eat( $ref, 4 )} );
-	eat( $ref, 5*4 );
-
+	eat( $ref, 3*4 );
+	my( $play_date ) = _date_parse(
+		unpack( "I", ${eat( $ref, 4 )} ) 
+		);
+	eat( $ref, 4 );
+	
 	my( $rating ) = unpack( "S", "\000" . ${eat( $ref, 1)} );
+	eat( $ref, 3*4 );
+	my( $add_date ) = _date_parse(
+		unpack( "I", ${eat( $ref, 4 )} ) 
+		);
 	
 	print  STDERR "\theader length is $header_length\n" if $Debug;
 	print  STDERR "\trecord length is $record_length\n" if $Debug;
 	print  STDERR "\thohms is $hohms\n" if $Debug;
 	printf STDERR "\tid is %x\n", $id if $Debug;
 	print  STDERR "\ttype is $type\n" if $Debug;
+	print  STDERR "\tdate modified is $date_modified [" . 
+		localtime($date_modified) . "]\n" if $Debug;
 	print  STDERR "\tfile type is $file_type\n" if $Debug;
 	print  STDERR "\tcreator is $creator\n" if $Debug;
+	print  STDERR "\tplay date is $play_date [" . 
+		localtime($play_date) . "]\n" if $Debug;
+	print  STDERR "\tadd date is $add_date\n" if $Debug;
 	print  STDERR "\tbytes is $bytes\n" if $Debug;
 	print  STDERR "\ttrack is $track of $tracks\n" if $Debug;
 	print  STDERR "\tbit rate is $bit_rate\n" if $Debug;
 	print  STDERR "\tsample rate is $sample_rate\n" if $Debug;
-	printf STDERR "\trating is %x [%d] => %d stars\n", $rating, $rating, $rating / 20 if $Debug;
+	printf STDERR "\trating is %xh [%dd] => %d stars\n", $rating, 
+		$rating, $rating / 20 if $Debug;
 
-	die;
 	eat( $ref, $header_length - $Ate );
 		
 	my %hash;
@@ -232,20 +264,19 @@ sub htim
 
 BEGIN {
 %hohm_types = (
-	1 => 'goobledgook',
-	2 => 'title',
-	3 => 'album',
-	4 => 'artist',
-	5 => 'genre',
-	6 => 'file type',
-	11 => 'url',               # version 3.0
+	1   => 'goobledgook',
+	2   => 'title',
+	3   => 'album',
+	4   => 'artist',
+	5   => 'genre',
+	6   => 'file type',
+	11  => 'url',              # version 3.0
 	100 => 'playlist',
 	101 => 'smart playlist 1', # version 3.0
 	102 => 'smart playlist 2', # version 3.0
-	
 	);
 }
-	
+
 sub hohm
 	{
 	my $ref = shift;
@@ -297,8 +328,16 @@ sub hohm
 		my ($volume) = unpack( 'A*', ${eat( $ref, $next_len )} );
 		print STDERR "\tVolume is [$volume]\n" if $Debug;
 		$hohm{volume} = $volume;
-		eat( $ref, 6*4 );
+		eat( $ref, 5*4 );
 		
+		my( $some_date ) = unpack( 'I', ${eat( $ref, 4 )} );
+		printf STDERR "\tSome date is %X\n", $some_date if $Debug;
+		
+		$some_date = _date_parse( $some_date );
+			
+		print STDERR "\tsome date is [" . localtime( $some_date ) . "]\n" 
+			if $Debug;
+
 		eat( $ref, 2*4 ) if $iTunes_version =~ /^3/;
 		
 		($next_len) = unpack( 'S', "\000" . ${eat( $ref, 1 )} );
@@ -324,8 +363,13 @@ sub hohm
 		my ($directory) = unpack( 'A*', ${eat( $ref, $next_len )} );
 		print STDERR "\tdirectory is [$directory]\n" if $Debug;
 		$hohm{directory} = $directory;
-
-		while( 1 )
+		
+		# i don't know what this chunk of gobbledygook is
+		# the only thing i lose is my place, so i miss out
+		# on parsing the path at the end.  in iTunes 3 this
+		# doesn't matter so much because another hohm has
+		# the URL
+		while( 0 )
 			{
 			my( $next ) = unpack( 'A', ${eat( $ref, 1 )} );
 			printf STDERR "Next char is %x\n", ord($next) if $Debug;
@@ -342,11 +386,11 @@ sub hohm
 			last;
 			}
 			
-		($next_len) = unpack( 'S', ${eat( $ref, 2 )} );
+		#($next_len) = unpack( 'S', ${eat( $ref, 2 )} );
 
-		my ($path) = unpack( 'A*', ${eat( $ref, $next_len )} );
-		print STDERR "\tpath is [$path]\n" if $Debug;
-		$hohm{path} = $path;
+		#my ($path) = unpack( 'A*', ${eat( $ref, $next_len )} );
+		#print STDERR "\tpath is [$path]\n" if $Debug;
+		#$hohm{path} = $path;
 
 		eat( $ref, $length - $Ate );
 		}
