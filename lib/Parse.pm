@@ -187,21 +187,37 @@ sub htim
 
 	my( $track )  = unpack( "I", ${eat( $ref, 4 )} );
 	my( $tracks ) = unpack( "I", ${eat( $ref, 4 )} );
-	eat( $ref, 6);
+
+	eat( $ref, 2);
+
+	my( $year )   = unpack( "S", ${eat( $ref, 2)} );
+
+	eat( $ref, 2);
 	
 	my( $bit_rate )    = unpack( "S", ${eat( $ref, 2)} );
 	my( $sample_rate ) = unpack( "S", ${eat( $ref, 2)} );
-	
-	eat( $ref, 5*4 + 2 );
-	my( $creator ) = unpack( "A*", ${eat( $ref, 4 )} );
+
+	eat( $ref, 2);
+
+	my( $volume )      = unpack( "I", ${eat( $ref, 4 )} );
+	my( $start )       = unpack( "I", ${eat( $ref, 4 )} );
+	my( $end )         = unpack( "I", ${eat( $ref, 4 )} );
+	my( $play_count )  = unpack( "I", ${eat( $ref, 4 )} );
+
+	eat( $ref, 2);
+
+	my( $compilation ) = unpack( "S", ${eat( $ref, 2)} );
+
 	eat( $ref, 3*4 );
-	my( $play_date ) = _date_parse(
-		unpack( "I", ${eat( $ref, 4 )} ) 
-		);
-	eat( $ref, 4 );
+	
+	my( $play_count2 )  = unpack( "I", ${eat( $ref, 4 )} );
+	
+	my( $play_date ) = _date_parse( unpack( "I", ${eat( $ref, 4 )} )  );
+	my( $disk )      = unpack( "S", ${eat( $ref, 2)} );
+	my( $disks )     = unpack( "S", ${eat( $ref, 2)} );
 	
 	my( $rating ) = unpack( "S", "\000" . ${eat( $ref, 1)} );
-	eat( $ref, 3*4 );
+	eat( $ref, 11 );
 	my( $add_date ) = _date_parse(
 		unpack( "I", ${eat( $ref, 4 )} ) 
 		);
@@ -213,17 +229,25 @@ sub htim
 	print  STDERR "\ttype is $type\n" if $Debug;
 	print  STDERR "\tdate modified is $date_modified [" . 
 		localtime($date_modified) . "]\n" if $Debug;
-	print  STDERR "\tfile type is $file_type\n" if $Debug;
-	print  STDERR "\tcreator is $creator\n" if $Debug;
-	print  STDERR "\tplay date is $play_date [" . 
-		localtime($play_date) . "]\n" if $Debug;
-	print  STDERR "\tadd date is $add_date\n" if $Debug;
-	print  STDERR "\tbytes is $bytes\n" if $Debug;
+	print  STDERR "\tfile size is $bytes\n" if $Debug;
+	print  STDERR "\tplay time is $time ms\n" if $Debug;
 	print  STDERR "\ttrack is $track of $tracks\n" if $Debug;
+	print  STDERR "\tyear is $year ms\n" if $Debug;
 	print  STDERR "\tbit rate is $bit_rate\n" if $Debug;
 	print  STDERR "\tsample rate is $sample_rate\n" if $Debug;
+	print  STDERR "\tvolume adjustment is $volume\n" if $Debug;
+	print  STDERR "\tstart time is $start ms\n" if $Debug;
+	print  STDERR "\tend time is $end ms\n" if $Debug;
+	print  STDERR "\tplay count is $play_count\n" if $Debug;
+	print  STDERR "\tplay count2 is $play_count2\n" if $Debug;
+	print  STDERR "\tcompilation is $compilation\n" if $Debug;
+	print  STDERR "\tfile type is $file_type\n" if $Debug;
+	print  STDERR "\tplay date is $play_date [" . 
+		localtime($play_date) . "]\n" if $Debug;
+	print  STDERR "\tdisk is $disk of $disks\n" if $Debug;
 	printf STDERR "\trating is %xh [%dd] => %d stars\n", $rating, 
 		$rating, $rating / 20 if $Debug;
+	print  STDERR "\tadd date is $add_date\n" if $Debug;
 
 	eat( $ref, $header_length - $Ate );
 		
@@ -241,21 +265,24 @@ sub htim
 				
 	my $item = Mac::iTunes::Item->new(
 		{
-		title     => $hash{title},
-		genre     => $hash{genre},
-		seconds   => $time,
-		filesize  => $bytes,
-		file      => $hash{filename},
-		artist    => $hash{artist},
-		album     => $hash{album},
-		file_type => $hash{"file type"},
-		creator   => $hash{creator},
-		volume    => $hash{volume},
-		directory => $hash{directory},
-		path      => $hash{path},
-		track     => $track,
-		tracks    => $tracks,
-		url       => $hash{url},
+		album       => $hash{album},
+		artist      => $hash{artist},
+		bit_rate    => $hash{bit_rate},
+		creator     => $hash{creator},
+		directory   => $hash{directory},
+		file        => $hash{filename},
+		filesize    => $bytes,
+		file_type   => $hash{"file type"},
+		genre       => $hash{genre},
+		path        => $hash{path},
+		rating      => $rating,
+		sample_rate => $hash{sample_rate},
+		seconds     => $time,
+		title       => $hash{title},
+		track       => $track,
+		tracks      => $tracks,
+		url         => $hash{url},
+		volume      => $hash{volume},
 		}
 		);
 	
@@ -273,6 +300,9 @@ BEGIN {
 	5   => 'genre',
 	6   => 'file type',
 	11  => 'url',              # version 3.0
+	12  => 'composer',
+	58  => 'eq_unknown',
+	60  => 'eq_setting',
 	100 => 'playlist',
 	101 => 'smart playlist 1', # version 3.0
 	102 => 'smart playlist 2', # version 3.0

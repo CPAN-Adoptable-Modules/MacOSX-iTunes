@@ -44,13 +44,21 @@ sub new
 	my $hash  = shift;
 	
 	my $self = {
-		title    => $hash->{title},
-		genre    => $hash->{genre},
-		seconds  => $hash->{seconds},
-		file     => $hash->{path},
-		artist   => $hash->{artist},
-		url      => $hash->{url},
-		_hash    => $hash
+		album       => $hash->{album},
+		artist      => $hash->{artist},
+		bit_rate    => $hash->{bit_rate},
+		comments    => $hash->{comments},
+		composer    => $hash->{composer},
+		genre       => $hash->{genre},
+		file        => $hash->{path},
+		play_count  => $hash->{play_count},
+		rating      => $hash->{rating},
+		sample_rate => $hash->{sample_rate},
+		title       => $hash->{title},
+		seconds     => $hash->{seconds},
+		url         => $hash->{url},
+		track       => $hash->{track},
+		_hash       => $hash
 		};
 	
 	bless $self, $class;
