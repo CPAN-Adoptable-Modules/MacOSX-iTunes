@@ -89,7 +89,7 @@ sub new_from_directory
 	my @items = ();
 	foreach my $file ( @$array )
 		{
-		my $item = Mac::iTunes::Item->new( $file );
+		my $item = Mac::iTunes::Item->new( { file => $file } );
 		
 		push @items, $item;
 		}

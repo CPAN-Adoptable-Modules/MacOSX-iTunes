@@ -43,6 +43,8 @@ sub new
 	my $class = shift;
 	my $hash  = shift;
 	
+	return unless UNIVERSAL::isa( $hash, 'HASH' );
+	
 	my $self = $hash;
 	
 	bless $self, $class;
