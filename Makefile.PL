@@ -10,7 +10,7 @@ use Test::Manifest qw(get_t_files);
 
 WriteMakefile(
     'NAME'		    => 'Mac::iTunes',
-	'VERSION'       => '0.5_03',
+	'VERSION'       => '0.6_01',
 	
     'PM'            => {
     	'lib/iTunes.pm'       => '$(INST_LIBDIR)/iTunes.pm',
@@ -32,5 +32,6 @@ WriteMakefile(
 		    	
     test   => { TESTS      => scalar get_t_files() },
     depend => { 'Makefile' => 't/test_manifest' },
+    clean  => { FILES      => q|"mp3/iTunes Music Library"| },
     	
 	);
