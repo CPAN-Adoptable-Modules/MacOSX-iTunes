@@ -15,13 +15,36 @@ MacOSX::iTunes::Item
 
 =over 4 
 
-=item new( FILE )
+=item new
+
+=cut
+
+sub new
+	{
+	my $class = shift;
+	my $hash  = shift;
+	
+	my $self = {
+		title    => $hash->{title},
+		genre    => $hash->{genre},
+		seconds  => $hash->{seconds},
+		file     => $hash->{path},
+		artist   => $hash->{artist},
+		_hash    => $hash
+		};
+	
+	bless $self, $class;
+	
+	return $self;
+	}
+	
+=item new_from_mp3( FILE )
 
 Creates a new item from the given file name.
 
 =cut
 
-sub new
+sub new_from_mp3
 	{
 	my $class = shift;
 	my $file  = shift;
