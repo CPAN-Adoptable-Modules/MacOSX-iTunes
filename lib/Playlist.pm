@@ -1,5 +1,6 @@
 # $Id$
 package Mac::iTunes::Playlist;
+use strict;
 
 =head1 NAME
 
