@@ -4,11 +4,11 @@ use strict;
 
 =head1 NAME
 
-tkitunes - a Tk interface to iTunes
+tk-itunes.pl - a Tk interface to iTunes
 
 =head1 SYNPOSIS
 
-% tkitunes
+% tk-itunes.pl
 
 =head1 DESCRIPTION
 
@@ -38,10 +38,15 @@ selection. [ 00cccc ]
 
 =head1 TO DO
 
-* Make the playlist and track lists work.
+* how do I refresh the playlist menu?
 
-* Make the UI appearance components configurable to allow people to
-create skins
+* how do I figure out the currently playing song, select
+the right playlist, and highlight the song in the track 
+listing?
+
+* add skin support.  I just need to add colors to
+everything, and make that configurable.
+
 
 =head1 SEE ALSO
 
@@ -73,6 +78,9 @@ use Tk;
 my $Current    = '--> player stopped <--';
 my $Time       = 0;
 my @Tracks     = ();
+my @Playlists  = ();
+my $Playlist   = 'Library';
+my $List       = '';
 
 my $Config     = ConfigReader::Simple->new( "tkitunes.rc" );
 
@@ -92,24 +100,30 @@ MainLoop;
 sub _make_window
 	{	
 	my $mw = MainWindow->new( );
+	$mw->resizable( 0, 0 );
 	$mw->title( $Config->title || 'TikiTunes' );
 	 
 	my $scale_value = 0;
-
+	my $volume = 0;
+	
 	my $menubar     = _menubar( $mw );
 	
-	my $right_frame = _make_frame( $mw, 'right' );
+	my $vol_frame   = _make_frame( $mw, 'left' );
 	my $left_frame  = _make_frame( $mw, 'left'  );
+	my $right_frame = _make_frame( $mw, 'left' );
 		
+	my $volume      = _make_volume( $vol_frame, \$volume );
+	
 	my $buttons     = _buttons( $left_frame );
 	
-	my $label       = _current_track_label( $right_frame, \$Current );
+	my $label       = _current_label( $right_frame, \$Current  );
+	my $play        = _current_label( $right_frame, \$Playlist );
 
 	my $scale       = _scale( $right_frame, \$scale_value );
 
-	my $tracks      = _track_list_box( $right_frame );
+	$List           = _track_list_box( $right_frame );
 	
-	tie @Tracks, 'Tk::Listbox', $tracks;
+	tie @Tracks, 'Tk::Listbox', $List;
 	
 	my $repeat		= _repeat( $mw, \$scale_value   );
     
@@ -129,24 +143,52 @@ sub _make_actions
 		stop         => sub { $C->stop                                 },
 
 		reset_time   => sub { $Time = $C->current_track_finish         },
-		get_tracks   => sub { $C->get_track_names_in_playlist( $_[0] ) },
 		track_name   => sub { $C->current_track_name                   },
 		quit         => sub { $C->stop; exit                           },
+
 		update_ui    => sub { 1 },
-		playlists    => sub { $C->get_playlists                        },
+		playlist     => sub { $Playlist  = $_[0]; $C->set_playlist( $_[0] )  },
 		position     => sub { $C->player_position                      },
 		get_state    => sub { $C->player_state                         },
 		
 		bleat        => sub { print STDERR "Debug level is $Verbose\n" },
 		debug_more   => sub { $Verbose++ % 3                           },
 		debug_less   => sub { $Verbose > 0 ? $Verbose-- : 0            },
+
+		get_tracks   => sub { 
+			@Tracks = @{ $C->get_track_names_in_playlist( $_[0] || $Playlist ) }; 
+			[ @Tracks ] },
+
+		playlists    => sub { 
+			@Playlists = @{ $C->get_playlists }; 
+			[ @Playlists ] },
 		);
-		
+	
+	$Actions{volume} = sub {
+		defined $_[0] ?
+			$C->volume( $_[0] ) : $C->volume };
+				
 	$Actions{play} = sub { 
 		$C->play; 
 		$Actions{reset_time}->(); 
 		};
+
+	$Actions{play_track} = sub { 
+		my $selected =  ( $List->curselection )[0];
+		$selected = defined $selected ? $selected + 1 : 1;
+		$C->play_track( $selected, $Playlist ); 
+		$Actions{reset_time}->(); 
+		};
 	
+	$Actions{refresh} = sub { 
+		$Actions->{get_tracks}->($Playlist); $Actions->{playlists}->(); 
+		};
+
+	$Actions{set_playlist} = sub { 
+		$Playlist = $_[0];
+		$Actions->{get_tracks}->($Playlist); $Actions->{playlists}->(); 
+		};
+		
 	$SIG{INT} = $Actions{quit};
 	
 	return \%Actions;
@@ -165,12 +207,48 @@ sub _make_frame
 	return $frame;
 	}
 
+sub _make_volume
+	{
+	my $frame = shift;
+	my $value = shift;
+	
+	my $scale = $frame->Scale(
+		-sliderlength => 10,
+		-length       => 220,
+		-from         => 0,
+		-to           => -100,
+		-orient       => 'vertical',
+		-variable     => $value,
+		-showvalue    => 0,
+		-relief       => 'flat',
+		-takefocus    => 0,
+		-width        => 15,
+		-troughcolor  => '#FFFF00',
+		-borderwidth  => 1,
+		-foreground   => '#000000',
+		-command      => sub { 
+			
+			},
+		)->pack(
+			-anchor => 'e',
+			-side   => 'top',
+			-fill   => 'y',
+			);
+	
+	$scale->configure( -command => sub {
+		my $level = $scale->get() + 100;
+		$Actions->{volume}->( $level );
+		} );
+		
+	return $scale;
+	}
+
 sub _buttons
 	{
 	my $frame = shift;
 	
 	my @Buttons = ( 
-		[ 'Play',    '00ff00',  [ qw(play)             ], ],
+		[ 'Play',    '00ff00',  [ qw(play_track)       ], ],
 		[ 'Pause',   'ffcc00',  [ qw(pause)            ], ],
 		[ 'Stop',    'ff0000',  [ qw(stop)             ], ],
 		[ 'Restart', '00ffff',  [ qw(back_track)       ], ],
@@ -222,13 +300,19 @@ sub _menubar
 	my $file_items = [
 		[qw( command ~Quit -accelerator Ctrl-q -command ) => $Actions->{quit} ]
 		];
-	my( $edit_items, $help_items, $play_items ) = ( [], [], [] );
+	my( $edit_items, $help_items, $play_items, $refresh_items ) = ( [], [], [] );
 	foreach my $playlist ( @{ $Actions->{'playlists'}->() } )
 		{
 		push @$play_items, [ 'command', $playlist, 
-			'-command' => sub { @Tracks = @{ $Actions->{get_tracks}->( $playlist ) } } ];
+			'-command' => sub { $Playlist = $playlist;
+				@Tracks = @{ $Actions->{get_tracks}->( $playlist ) } } ];
 		}
 
+	$refresh_items = [
+		[ 'command', 'Playlists', -command => $Actions->{playlists}  ],
+		[ 'command', 'Tracks',    -command => $Actions->{get_tracks} ],
+		];
+		
 	my $file = _menu( $menubar, "~File",     $file_items );
 	my $edit = _menu( $menubar, "~Edit",     $edit_items );
 	my $play = _menu( $menubar, "~Playlist", $play_items );		
@@ -253,7 +337,7 @@ sub _menu
 	return $menu;
 	};
 
-sub _current_track_label
+sub _current_label
 	{
 	my $frame = shift;
 	my $value = shift;
@@ -306,8 +390,10 @@ sub _track_list_box
 	
 	my $color = $Config->list_color || '00cccc';
 	
-	my $list = $frame->Listbox(
+	my $list = $frame->Scrolled('Listbox',
+		-scrollbars       => 're',
 		-selectbackground => "#$color",
+		-selectmode       => "single",
 		)->pack(
 			-fill   => 'y', 
 			-fill   => 'x', 
@@ -320,7 +406,7 @@ sub _track_list_box
 		{
 		$list->insert( 'end', $track );
 		}
-		
+				
 	return $list;
 	}
 	
@@ -331,7 +417,8 @@ sub _repeat
 	
 	$mw->repeat( 3_000, 
 		sub { 
-			my $state = $Actions->{get_state}->();
+			my $state  = $Actions->{get_state}->();
+			my $volume = $Actions->{volume}->();
 			
 			if( $state eq PLAYING )
 				{
@@ -359,4 +446,4 @@ sub _repeat
 			} );
 	}
 	
-BEGIN { @ARGV = qw( -geometry 305x225+30+30 ) }
+BEGIN { @ARGV = qw( -geometry 325x260+30+30 ) }
