@@ -458,7 +458,6 @@ sub hohm
 
 		$next_len        = _get_length( $ref );
 		$hohm{directory} = _get_unicode( $ref, $next_len ); # 0 bytes?
-<<<<<<< Parse.pm
 		warn "\t\tdirectory is $hohm{directory}\n" if $Debug;
 		
 		if( $iTunes_version =~ /^(?:3|4)/ )
