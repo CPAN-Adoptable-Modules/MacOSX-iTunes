@@ -32,13 +32,14 @@ is( $playlist->items, 1,                                  'Count is still right'
 
 isa_ok( $playlist = Mac::iTunes::Playlist->new( $Title, [ $item ] ), 
 	'Mac::iTunes::Playlist' );
-ok( $playlist->items == 1,                                'Count is still right'  );
+is( $playlist->items, 1,                                  'Count is still right'  );
 
 
 my @items = map { Mac::iTunes::Item->_new( $_ ) } 0 .. 10;
 
-isa_ok( $playlist = Mac::iTunes::Playlist->new( $Title, \@items ), 'Mac::iTunes::Playlist' );
-ok( $playlist->items == @items, 'Count is right after fake objects' );	
+isa_ok( $playlist = Mac::iTunes::Playlist->new( $Title, \@items ), 
+	'Mac::iTunes::Playlist' );
+is( $playlist->items, @items, 'Count is right after fake objects' );	
 
 my $count = $playlist->items;
 my %hash;
@@ -56,7 +57,7 @@ foreach my $try ( 0 .. 100 )
 my @keys   = keys %hash;
 my @values = values %hash;
 	
-ok( @keys == $count, 'Fetch all items with random' );
+is( @keys, $count, 'Fetch all items with random' );
 		
 #my $min = 100_000;
 #foreach my $try ( @values ) { $min = $try if $try < $min }
