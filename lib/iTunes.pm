@@ -1,8 +1,8 @@
 # $Id$
 package MacOSX::iTunes;
 
-use MacOSX::iTunes::Playlist;
 use MacOSX::iTunes::Item;
+use MacOSX::iTunes::Playlist;
 
 require Exporter;
 use base qw(Exporter);
@@ -10,6 +10,8 @@ use base qw(Exporter);
 $VERSION = '0.01';
 
 =head1 NAME
+
+MacOSX::iTunes -
 
 =head1 SYNOPSIS
 
@@ -19,7 +21,7 @@ $VERSION = '0.01';
 
 =over 4 
 
-=item new( [FILENAME] )
+=item new()
 
 Creates a new MacOSX::iTunes object.  If you specify a filename argument
 the object uses that file as the iTunes Music Library to initialize
@@ -179,10 +181,15 @@ object.
 sub read
 	{
 	my $self = shift;
+	my $file = shift;
+		
+	return unless open my( $fh ), $file;
 
-	$self->_not_implemented;
+	require MacOSX::iTunes::Library::Parse;
+	
+	MacOSX::iTunes::Library::Parse->parse( $fh );
 	}
-
+	
 =item merge( FILENAME | OBJECT )
 
 Merges the current music library with the one in the named file

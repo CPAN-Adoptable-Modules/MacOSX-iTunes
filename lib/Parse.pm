@@ -4,10 +4,11 @@ use strict;
 
 use vars qw($Debug $Ate %hohm_types);
 
+use MacOSX::iTunes;
 use MacOSX::iTunes::Item;
 use MacOSX::iTunes::Playlist;
 
-$Debug = 1;
+$Debug = 0;
 $Ate   = 0;
 
 my %Dispatch = (
@@ -28,8 +29,9 @@ sub parse
 		
 	my $data = do { local $/; <$fh> };
 	
-	my @Songs     = ();
-	my @Libraries = ();
+	my %songs     = ();
+	
+	my $itunes = MacOSX::iTunes->new();
 	
 	while( $data )
 		{
@@ -39,23 +41,31 @@ sub parse
 		
 		my $marker = $1;
 		
-		my $result = $Dispatch{$marker}->( \$data );
+		my @result = $Dispatch{$marker}->( \$data );
 		
 		if( $marker eq 'htim' )
 			{
-			push @Songs, $result;
+			$songs{ $result[1] } = $result[0];
 			}
 		elsif( $marker eq 'hpim' )
 			{
-			push @Libraries, $result;
+			my $playlist = shift @result;
+			
+			$itunes->add_playlist( $playlist );
+			
+			foreach my $song ( @result )
+				{
+				warn "Could not add item! [$song]" 
+					unless $playlist->add_item( $songs{$song} );
+				}
 			}
 		}
 		
 	require Data::Dumper;
 	
-	print STDERR Data::Dumper::Dumper( @Songs ), "\n";
-	print STDERR Data::Dumper::Dumper( @Libraries ), "\n";
+	print STDERR Data::Dumper::Dumper( $itunes ), "\n" if $Debug;
 	
+	$itunes;	
 	}
 	
 sub hd
@@ -169,7 +179,7 @@ sub htim
 	
 	my $key = make_song_key( $id );
 				
-	return $item;
+	return ($item, $key);
 	}
 
 BEGIN {
@@ -337,8 +347,6 @@ sub hpim
 
 	my( $foo ) = unpack( "I", ${eat( $ref, 4 )} );
 	my( $bar ) = unpack( "I", ${eat( $ref, 4 )} );
-
-	printf STDERR "\tnext bytes are %x and %x\n", $foo, $bar if $Debug;
 	
 	my( $songs ) = unpack( "I", ${eat( $ref, 4 )} );
 
@@ -350,16 +358,17 @@ sub hpim
 	
 	my $playlist = MacOSX::iTunes::Playlist->new( $result->{playlist} );
 	
+	my @songs = ();
 	foreach my $index ( 1 .. $songs )
 		{
 		my $song = $Dispatch{'hptm'}->( $ref );
 		
 		print STDERR "\tKey is $song\n" if $Debug;
 		
-		#$playlist->add_item( ); 
+		push @songs, $song;
 		}
 	
-	return $playlist;	
+	return ( $playlist, @songs );	
 	}
 	
 sub hptm
@@ -410,4 +419,24 @@ sub eat
 	\$data;
 	}
 
-1;
+"See why 1984 won't be like 1984";
+
+=back
+
+=head1 SEE ALSO
+
+L<MacOSX::iTunes>, L<MacOSX::iTunes::Item>
+
+=head1 TO DO
+
+* everything - the list of things already done is much shorter.
+
+=head1 BUGS
+
+=head1 AUTHOR
+
+Copyright 2002, brian d foy <bdfoy@cpan.org>
+
+You may redistribute this under the same terms as Perl.
+
+=cut
