@@ -14,7 +14,7 @@ my $Title    = 'The Tappan Sisters';
 # how many files in the mp3 directory?
 my $expected = 7;
 
-isa_ok( $item     = Mac::iTunes::Item->new( $file ),      'Mac::iTunes::Item'     );
+isa_ok( $item     = Mac::iTunes::Item->new( {} ),         'Mac::iTunes::Item'     );
 isa_ok( $playlist = Mac::iTunes::Playlist->new( $Title ), 'Mac::iTunes::Playlist' );
 is( $playlist->items, 0,                                  'Zero items at start'   );
 is( $playlist->title, $Title,                             'Title is correct'      );
