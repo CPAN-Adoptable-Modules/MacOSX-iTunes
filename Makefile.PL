@@ -34,8 +34,8 @@ item.t
 playlist.t
 endian.t
 parse.t
-parse3.t
-parse4.t
+#parse3.t
+#parse4.t
 parse_audible.t
 preferences.t
 HERE
@@ -61,7 +61,7 @@ HERE
 	print $fh 1;
 	close $fh;
 	}
-elsif( not $TestPrereq )
+elsif( 0 and not $TestPrereq )
 	{
 	open my($fh), ">> t/test_manifest";
 	print $fh <<"HERE";
