@@ -1,11 +1,12 @@
 # $Id$
 Revision history for Perl extension MacOSX::iTunes.
 
-0.08  Thu Oct 10 06:52:03 CDT 2002
+0.8 Tue Nov 26 21:44:20 CST 2002 
 	- much better htim parsing
 	- none of the applescript has changed
+	- some tests are more robust
+	- new_from_directory() makes Item object correctly
 	
 0.01  Mon Jun 10 19:16:12 2002
 	- original version; created by h2xs 1.21 with options
 		-AXn MacOSX::iTunes
-
