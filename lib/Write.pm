@@ -115,8 +115,6 @@ XML
 	return $str;
 	}
 
-=cut
-
 =back
 
 =head1 SOURCE AVAILABILITY
