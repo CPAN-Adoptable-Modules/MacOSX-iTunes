@@ -1,6 +1,12 @@
 # $Id$
 Revision history for Perl extension MacOSX::iTunes.
 
+0.85 - Fri Jul 15 00:40:29 2005
+	* Added check in Parse.pm for the iTunes library version number.
+	We can't handle stuff later than version 4.5, so we die if that
+	happens. I'd like to handle the later versions, but I haven't had
+	time to figure out the file format.
+
 0.84 - Fri Oct  8 16:15:49 2004
 * i fixed up a few distribution things, but this module needs a 
 lot of work to catch up to the current state of iTunes.  You
