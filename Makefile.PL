@@ -27,13 +27,14 @@ unless( $TestPrereq )
 	print $fh <<"HERE";
 load.t
 pod.t
-prereq.t
+#prereq.t
 check_mp3.t
 itunes.t
 item.t
 playlist.t
 endian.t
 parse.t
+version_check.t
 #parse3.t
 #parse4.t
 parse_audible.t
