@@ -18,6 +18,10 @@ Mac::iTunes::Library::Parse - parse the iTunes binary database file
 
 =head1 SYNOPSIS
 
+***NOTE: This only works for the formats for iTunes 4.5 and earlier.
+After that, Apple changed the format and I haven't been able to
+suss it out. ***
+
 This class is usually used by Mac::iTunes.
 
 	use Mac::iTunes;
@@ -190,6 +194,11 @@ sub hdfm
 
 	warn "\tapplication version is $iTunes_version\n" if $Debug;
 
+	croak 
+	"Mac::iTunes::Parse cannot handle library formats later than iTunes 4.5.\n".
+	"I'd like to be able to parse the new library format. Can anyone help? :)\n"
+		unless _version_check( $iTunes_version );
+		
 	_leftovers( $ref, $length );
 	}
 
@@ -621,6 +630,21 @@ sub make_song_key
 	sprintf "%08x", $_[0];
 	}
 
+sub _version_check
+	{	
+	my @versions = map { s/^[0\000]+//; $_ } split /\./,  shift;
+	
+	warn "Versions are [@versions]\n" if $Debug;
+	
+	return do {
+		   if( $versions[0] < 4 ) { 1 }
+		elsif( $versions[0] > 4 ) { 0 }
+		elsif( $versions[1] < 6 ) { 1 }
+		else                      { 0 }
+		};
+	
+	}
+	
 sub _peek
 	{
 	my $ref = shift;

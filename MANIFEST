@@ -52,6 +52,8 @@ mp3/empty1.mp3
 mp3/empty2.mp3
 mp3/empty3.mp3
 mp3/iTunes_3_Music_Library
+mp3/iTunes_4_Music_Library
+mp3/iTunes_4_6_Music_Library
 mp3/iTunes_Music_Library
 mp3/Audible_file
 plists/com.apple.iTunes.plist
@@ -75,6 +77,7 @@ t/preferences.t
 t/prereq.t
 t/setup_itunes.t
 t/track_info.t
+t/version_check.t
 t/write.t
 tk/tk-itunes.pl
 tk/tkitunes.rc

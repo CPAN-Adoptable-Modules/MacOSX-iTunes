@@ -11,7 +11,7 @@ use Mac::iTunes::Playlist;
 
 require Exporter;
 
-$VERSION = '0.84';
+$VERSION = '0.85';
 
 =head1 NAME
 
@@ -228,6 +228,10 @@ sub playlist_exists
 
 =item read( FILENAME )
 
+*** NOTE: This does not work for iTunes 4.6 and later, which has
+a different file format. Can anyone help me figure out what that
+format is? ***
+
 Reads the named iTunes Music Library file and uses it to form the
 music library object, replacing any other data already in the
 object.
@@ -298,6 +302,8 @@ sub _not_implemented
 * speed everything up 100 times with Mac::Glue when it works on
 Mac OS X
 
+* Figure out the new file format for the binary library file
+
 =head1 BUGS
 
 * plenty
@@ -318,7 +324,7 @@ brian d foy,  C<< <bdfoy@cpan.org> >>
 
 =head1 COPYRIGHT
 
-Copyright 2004, brian d foy, All rights reserved
+Copyright 2005, brian d foy, All rights reserved
 
 You may redistribute this under the same terms as Perl.
 
