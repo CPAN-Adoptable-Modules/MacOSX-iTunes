@@ -13,3 +13,6 @@ Makefile.old
 iTunes\s+
 t/test_manifest
 t/test_manifest
+\.#
+hexdump.txt
+\.bak$
