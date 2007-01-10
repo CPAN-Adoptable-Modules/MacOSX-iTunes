@@ -26,8 +26,10 @@ applescript/tracks_in_playlist.osa
 cgi/iTunes.cgi
 Changes
 doc/file_format.pod
+examples/crypt-rijndael.pl
 examples/html_table.tmpl
 examples/publisher.pl
+examples/README
 examples/summary.pl
 examples/tabs.tmpl
 html/iTunes.html

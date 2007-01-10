@@ -80,6 +80,7 @@ my @Mac_docs = $Mac ? qw(
 WriteMakefile(
     'NAME'	    => 'Mac::iTunes',
     'VERSION_FROM'  => 'lib/iTunes.pm',
+	'LICENSE'       => 'perl',
 	
     'PM'            => {
     	@Mac_specific,
