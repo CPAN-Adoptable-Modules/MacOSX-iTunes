@@ -78,9 +78,10 @@ my @Mac_docs = $Mac ? qw(
 	) : ();
 	
 WriteMakefile(
-    'NAME'	    => 'Mac::iTunes',
+    'NAME'          => 'Mac::iTunes',
     'VERSION_FROM'  => 'lib/iTunes.pm',
 	'LICENSE'       => 'perl',
+	'AUTHOR'        => 'brian d foy <bdfoy@cpan.org>',
 	
     'PM'            => {
     	@Mac_specific,

@@ -11,7 +11,7 @@ use Mac::iTunes::Playlist;
 
 require Exporter;
 
-$VERSION = '0.86';
+$VERSION = '0.87';
 
 =head1 NAME
 

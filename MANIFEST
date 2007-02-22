@@ -43,10 +43,10 @@ lib/Plist.pm
 lib/Preferences.pm
 lib/Write.pm
 Libraries/Audible/Audible_file
+LICENSE
 Makefile.PL
 MANIFEST			This list of files
 MANIFEST.SKIP
-META.yml
 mp3/Audible_file
 mp3/empty.d/empty4.mp3
 mp3/empty.d/empty5.mp3
@@ -56,7 +56,6 @@ mp3/empty2.mp3
 mp3/empty3.mp3
 mp3/iTunes_3_Music_Library
 mp3/iTunes_4_6_Music_Library
-mp3/iTunes_4_Music_Library
 mp3/iTunes_Music_Library
 mp3/The_Wee_Kirkcudbright_Centipede.mp3
 plists/com.apple.iTunes.plist
