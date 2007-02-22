@@ -601,7 +601,7 @@ sub hpim
 	return @playlists;
 	}
 
-=item
+=item hptm
 
 The hptm record holds a track identifier.
 
