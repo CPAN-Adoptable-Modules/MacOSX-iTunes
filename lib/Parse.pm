@@ -10,7 +10,8 @@ use Mac::iTunes;
 use Mac::iTunes::Item;
 use Mac::iTunes::Playlist;
 
-$VERSION = sprintf "%d.%02d", q$Revision$ =~ m/ (\d+) \. (\d+) /gx;
+$VERSION = 1.21;
+#sprintf "%d.%02d", q$Revision$ =~ m/ (\d+) \. (\d+) /gx;
 
 =head1 NAME
 

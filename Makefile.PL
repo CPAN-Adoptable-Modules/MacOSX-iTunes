@@ -27,7 +27,7 @@ parse.t
 version_check.t
 #parse3.t
 #parse4.t
-parse_audible.t
+#parse_audible.t
 preferences.t
 HERE
 	
@@ -101,6 +101,7 @@ WriteMakefile(
 		'MP3::Info'         => '0',
 		'Test::Manifest'    => '0.9',
 		'Test::More'        => '0',
+		'Test::Manifest'    => '1.14',
 		},
 
 	'MAN3PODS' =>

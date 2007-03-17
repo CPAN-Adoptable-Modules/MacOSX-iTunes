@@ -5,7 +5,8 @@ use strict;
 use base qw(Mac::iTunes);
 use vars qw($VERSION $XML_HEAD $XML_FOOT);
 
-$VERSION = sprintf "%d.%02d", q$Revision$ =~ m/ (\d+) \. (\d+) /gx;
+$VERSION = 1.10;
+#sprintf "%d.%02d", q$Revision$ =~ m/ (\d+) \. (\d+) /gx;
 
 =head1 NAME
 

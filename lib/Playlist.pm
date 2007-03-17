@@ -4,7 +4,8 @@ use strict;
 
 use vars qw($VERSION);
 
-$VERSION = sprintf "%d.%02d", q$Revision$ =~ m/ (\d+) \. (\d+) /gx;
+$VERSION = 1.15;
+#sprintf "%d.%02d", q$Revision$ =~ m/ (\d+) \. (\d+) /gx;
 
 =head1 NAME
 
