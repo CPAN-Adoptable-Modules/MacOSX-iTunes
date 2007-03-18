@@ -1,4 +1,4 @@
- use Crypt::Rijndael;
+use Crypt::Rijndael;
 
 open my( $fh ), "<", "/Users/brian/Music/iTunes/iTunes Library";
 binmode $fh;
@@ -50,10 +50,7 @@ __END__
 
 
  $plaintext = $cipher->decrypt($crypted);
- 
- 
- =pod
- 
+  
  nfile = file(filename, "rb")
  try:
      h = infile.read(8)
@@ -79,5 +76,3 @@ __END__
      file("dump.itl","wb").write(buf)
  finally:
      infile.close()
-
-=cut
