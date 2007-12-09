@@ -1,6 +1,8 @@
 # $Id$
 use ExtUtils::MakeMaker;
 
+require 5.006;
+
 eval "use Test::Manifest 1.14";
 	
 # if we are running under Test::Prereq, we do not want side effects
@@ -79,6 +81,8 @@ my @Mac_docs = $Mac ? qw(
 	
 WriteMakefile(
     'NAME'          => 'Mac::iTunes',
+	'ABSTRACT'      => 'interact with and control iTunes';
+
     'VERSION_FROM'  => 'lib/iTunes.pm',
 	'LICENSE'       => 'perl',
 	'AUTHOR'        => 'brian d foy <bdfoy@cpan.org>',
