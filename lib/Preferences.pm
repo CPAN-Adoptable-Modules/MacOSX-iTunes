@@ -1,6 +1,7 @@
 # $Id$
 package Mac::iTunes::Preferences;
 use strict;
+use warnings;
 
 use vars qw($VERSION);
 

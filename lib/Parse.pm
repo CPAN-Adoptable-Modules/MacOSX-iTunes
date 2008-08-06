@@ -1,6 +1,7 @@
 # $Id$
 package Mac::iTunes::Library::Parse;
 use strict;
+use warnings;
 
 use vars qw($Debug $Ate %hohm_types $iTunes_version $VERSION);
 

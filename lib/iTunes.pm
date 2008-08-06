@@ -1,6 +1,7 @@
 # $Id$
 package Mac::iTunes;
 use strict;
+use warnings;
 
 use base qw(Exporter);
 use vars qw($VERSION);
