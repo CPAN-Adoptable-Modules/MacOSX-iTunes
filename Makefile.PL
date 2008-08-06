@@ -81,8 +81,7 @@ my @Mac_docs = $Mac ? qw(
 	
 WriteMakefile(
     'NAME'          => 'Mac::iTunes',
-	'ABSTRACT'      => 'interact with and control iTunes';
-
+	'ABSTRACT'      => 'interact with and control iTunes',
     'VERSION_FROM'  => 'lib/iTunes.pm',
 	'LICENSE'       => 'perl',
 	'AUTHOR'        => 'brian d foy <bdfoy@cpan.org>',
