@@ -1,6 +1,6 @@
 This is the Mac::iTunes distribution, which contains both Mac specific
-and OS neutral components.  The Mac-specific portions interface with
-the iTunes application through Applescript.  The neutral portions deal
+and OS neutral components. The Mac-specific portions interface with
+the iTunes application through Applescript. The neutral portions deal
 with the file and preference formats, which you may want to use on a 
 computer that can read the files on a Mac (or in some other fashion).
 
@@ -12,17 +12,4 @@ NO_MAC
 	
 If you are not on a Mac, you get the same effect automatically.
 
-You can install this anywhere that you like.  If you want to install it
-in a directory other than the main perl library, you can use the PREFIX
-switch.
-
-Install everything (lib, man) in my home directory, you can use one of
-the following
-
-	perl Makefile.PL PREFIX=~
-	perl Makefile.PL PREFIX=$HOME
-	
-If you want to install it somewhere else, you only need to specify that
-directory
-
-	perl Makefile.PL
+Otherwise, it's the standard Perl module installation stuff.
