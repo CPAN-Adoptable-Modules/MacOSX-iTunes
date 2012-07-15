@@ -2,7 +2,7 @@ use ExtUtils::MakeMaker;
 
 require 5.010;
 
-eval "use Test::Manifest 1.14";
+eval "use Test::Manifest 1.21";
 	
 # if we are running under Test::Prereq, we do not want side effects
 my $TestPrereq = grep { m/Test.{1,2}Prereq.pm$/ } keys %INC;
