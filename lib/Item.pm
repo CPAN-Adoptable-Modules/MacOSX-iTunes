@@ -4,8 +4,7 @@ use warnings;
 
 use vars qw($VERSION);
 
-$VERSION = 1.15; 
-#sprintf "%d.%02d", q$Revision$ =~ m/ (\d+) \. (\d+) /gx;
+$VERSION = 1.22;
 
 use MP3::Info qw(get_mp3tag);
 

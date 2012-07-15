@@ -10,8 +10,7 @@ use File::Spec;
 use Mac::AppleScript qw(RunAppleScript);
 use Mac::Path::Util;
 
-$VERSION = 1.14;
-#sprintf "%d.%02d", q$Revision$ =~ m/ (\d+) \. (\d+) /gx;
+$VERSION = 1.22;
 
 my $Singleton = undef;
 @EXPORT_OK = qw(TRUE FALSE PLAYING STOPPED PAUSED SMALL MEDIUM LARGE);
