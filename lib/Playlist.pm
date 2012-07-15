@@ -16,7 +16,6 @@ Mac::iTunes::Playlist
 
 	my $playlist = Mac::iTunes::Playlist->new( @items );
 
-
 =head1 DESCRIPTION
 
 =head2 METHODS
