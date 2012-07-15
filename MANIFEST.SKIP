@@ -17,3 +17,6 @@ t/test_manifest
 \.#
 hexdump.txt
 \.bak$
+blib
+\.git
+
