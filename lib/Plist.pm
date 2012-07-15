@@ -1,4 +1,3 @@
-# $Id$
 package Mac::iTunes::Library::Plist;
 use strict;
 use warnings;

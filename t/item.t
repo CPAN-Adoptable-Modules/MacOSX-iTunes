@@ -1,5 +1,3 @@
-# $Id$
-
 BEGIN { $^W = 0; }
 
 use Test::More tests => 7;

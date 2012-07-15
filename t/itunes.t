@@ -1,5 +1,3 @@
-# $Id$
-
 use Test::More tests => 18;
 
 BEGIN { use_ok( 'Mac::iTunes::Playlist' ); }

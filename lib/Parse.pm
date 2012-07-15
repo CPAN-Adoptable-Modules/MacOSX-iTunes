@@ -1,4 +1,3 @@
-# $Id$
 package Mac::iTunes::Library::Parse;
 use strict;
 use warnings;

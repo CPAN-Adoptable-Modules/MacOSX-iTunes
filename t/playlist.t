@@ -1,5 +1,3 @@
-# $Id$
-
 use Test::More tests => 331;
 
 use Mac::iTunes::Item;

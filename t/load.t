@@ -1,5 +1,3 @@
-# $Id$
-
 use File::Find;
 use Test::More;
 

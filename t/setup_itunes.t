@@ -1,4 +1,3 @@
-# $Id$
 use strict;
 
 BEGIN { $^W = 0 };

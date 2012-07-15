@@ -1,4 +1,3 @@
-# $Id$
 package Mac::iTunes::AppleScript;
 use strict;
 use warnings;
