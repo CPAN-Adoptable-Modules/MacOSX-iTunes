@@ -19,12 +19,12 @@ Mac::iTunes - interact with and control iTunes
 
 =head1 SYNOPSIS
 
-use Mac::iTunes;
+	use Mac::iTunes;
 
-# if you have Mac::iTunes::AppleScript
-my $controller = Mac::iTunes->controller();
+	# if you have Mac::iTunes::AppleScript
+	my $controller = Mac::iTunes->controller();
 
-my $library = Mac::iTunes->new( $library_path );
+	my $library = Mac::iTunes->new( $library_path );
 
 =head1 DESCRIPTION
 

@@ -13,9 +13,9 @@ Mac::iTunes::Preferences - interact with the iTunes Preferences
 
 =head1 SYNOPSIS
 
-use Mac::iTunes;
+	use Mac::iTunes;
 
-$prefs = Mac::iTunes->preferences;
+	$prefs = Mac::iTunes->preferences;
 
 =head1 DESCRIPTION
 

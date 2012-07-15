@@ -13,7 +13,7 @@ Mac::iTunes::Library::Write - create an iTunes Music Library file
 
 =head1 SYNOPSIS
 
-	see the Mac::iTunes documentation
+see the Mac::iTunes documentation
 
 =head1 DESCRIPTION
 

@@ -34,13 +34,13 @@ Mac::iTunes::AppleScript - control iTunes from Perl
 
 =head1 SYNOPSIS
 
-use Mac::iTunes;
+	use Mac::iTunes;
 
-my $itunes = Mac::iTunes->controller;
+	my $itunes = Mac::iTunes->controller;
 
-$itunes->activate;
-$itunes->play;
-$itunes->quit;
+	$itunes->activate;
+	$itunes->play;
+	$itunes->quit;
 
 =head1 DESCRIPTION
 
