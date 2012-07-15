@@ -1,6 +1,11 @@
 # $Id$
 Revision history for Perl extension MacOSX::iTunes.
 
+1.22 - Sun Jul 15 19:01:19 2012
+	* Fix a typo in a module name link, and various cleanups
+	* This new release doesn't mean everything works with the
+	latest iTunes.
+
 0.89 - Sun Mar 18 08:55:12 2007
 	* Fixed a pod error for kwalitee. The Python example in the crypt-rijndael.pl
 	example wasn't happy.
