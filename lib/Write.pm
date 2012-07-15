@@ -17,7 +17,7 @@ see the Mac::iTunes documentation
 =head1 DESCRIPTION
 
 This module turns a Mac::iTunes object into an C<iTunes Music Library>
-file.
+XML file.
 
 =head1 METHODS
 
