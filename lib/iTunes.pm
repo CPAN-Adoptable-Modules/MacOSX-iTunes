@@ -56,7 +56,7 @@ sub new
 
 =item controller()
 
-Creates a new Mac::iTunes controller object.  See L<Mac::iTunes::Applescript>
+Creates a new Mac::iTunes controller object.  See L<Mac::iTunes::AppleScript>
 for methods.  This method is not available on non-Mac systems.
 
 =cut
