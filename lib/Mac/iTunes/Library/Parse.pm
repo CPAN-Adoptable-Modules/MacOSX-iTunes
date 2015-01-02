@@ -10,7 +10,7 @@ use Mac::iTunes;
 use Mac::iTunes::Item;
 use Mac::iTunes::Playlist;
 
-$VERSION = 1.22;
+$VERSION = '1.23';
 
 =head1 NAME
 
@@ -34,6 +34,8 @@ functions.
 	my $library = Mac::iTunes::Library::Parse::parse( FILENAME );
 
 =head1 DESCRIPTION
+
+**This module is unmaintained**
 
 Most functions output debugging information if the environment
 variable ITUNES_DEBUG is a true value.
@@ -808,13 +810,9 @@ sub _sprint_date
 
 =head1 SOURCE AVAILABILITY
 
-This source is part of a SourceForge project which always has the
-latest sources in CVS, as well as all of the previous releases.
+This source is in GitHub:
 
-	http://sourceforge.net/projects/brian-d-foy/
-
-If, for some reason, I disappear from the world, one of the other
-members of the project can shepherd this module appropriately.
+	https://github.com/CPAN-Adopt-Me/MacOSX-iTunes.git
 
 =head1 SEE ALSO
 

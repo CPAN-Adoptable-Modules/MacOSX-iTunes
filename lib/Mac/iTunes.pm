@@ -11,7 +11,7 @@ use Mac::iTunes::Playlist;
 
 require Exporter;
 
-$VERSION = 1.22;
+$VERSION = '1.23';
 
 =head1 NAME
 
@@ -27,6 +27,8 @@ Mac::iTunes - interact with and control iTunes
 	my $library = Mac::iTunes->new( $library_path );
 
 =head1 DESCRIPTION
+
+**This module is unmaintained**
 
 =head2 METHODS
 
@@ -310,13 +312,9 @@ Mac OS X
 
 =head1 SOURCE AVAILABILITY
 
-This source is part of a SourceForge project which always has the
-latest sources in SVN, as well as all of the previous releases.
+This source is in GitHub:
 
-	http://sourceforge.net/projects/brian-d-foy/
-
-If, for some reason, I disappear from the world, one of the other
-members of the project can shepherd this module appropriately.
+	https://github.com/CPAN-Adopt-Me/MacOSX-iTunes.git
 
 =head1 AUTHOR
 
